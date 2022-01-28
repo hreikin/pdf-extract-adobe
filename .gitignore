@@ -140,3 +140,7 @@ cython_debug/
 
 # local folders and files from building/converting
 src/
+test/
+output/
+pdfservices-api-credentials.json
+private.key
