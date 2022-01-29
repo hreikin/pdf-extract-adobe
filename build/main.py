@@ -28,4 +28,7 @@ for root, dirnames, filenames in os.walk(schema_source):
             file = os.path.join(root, filename)
             with open(file, "r") as stream:
                 extracted_json = json.loads(stream.read())
-            print(extracted_json)
+            for item in extracted_json["elements"][:]:
+                for k, v in item.items():
+                    if k == "Text":
+                        print(v)
