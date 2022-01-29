@@ -21,5 +21,6 @@ shutil.copy(self._file_path, abs_path)
 ```
 
 ## TODO
-- [ ] Create broad function to target all required items
-- [ ] Display output using print or similar
+- [x] Create broad function to target all required items
+- [x] Display text only output using print or similar
+- [ ] Create database with Json
