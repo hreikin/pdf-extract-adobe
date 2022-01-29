@@ -1,5 +1,6 @@
 import logging
 import os.path
+import zipfile, os, json
 
 from adobe.pdfservices.operation.auth.credentials import Credentials
 from adobe.pdfservices.operation.client_config import ClientConfig
@@ -53,3 +54,30 @@ def extract_all_from_pdf(source_file):
         result.save_as(base_path + f"/test/{pdf_name}-Extracted-Json-Schema.zip")
     except (ServiceApiException, ServiceUsageException, SdkException):
         logging.exception("Exception encountered while executing operation")
+
+
+def extract_json_from_zip(json_source):
+    # Extracts Json Schema from zip file.
+    os.chdir(json_source)
+    for file in os.listdir(json_source):
+        if zipfile.is_zipfile(file):
+            dirname = file.rstrip(".zip")
+            output_path = os.path.join(json_source + "/json/" + dirname)
+            if not os.path.isdir(output_path):
+                os.makedirs(output_path, exist_ok=True)
+            with zipfile.ZipFile(file) as item:
+                item.extractall(output_path)
+
+
+def do_something_with_json(schema_source):
+    # Loads Json Schema and prints the output.
+    for root, dirnames, filenames in os.walk(schema_source):
+        for filename in filenames:
+            if filename.endswith(".json"):
+                file = os.path.join(root, filename)
+                with open(file, "r") as stream:
+                    extracted_json = json.loads(stream.read())
+                for item in extracted_json["elements"][:]:
+                    for k, v in item.items():
+                        if k == "Text":
+                            print(v)
