@@ -38,7 +38,11 @@ def extract_all_from_pdf(source_file):
 
         # Build ExtractPDF options and set them into the operation
         extract_pdf_options: ExtractPDFOptions = ExtractPDFOptions.builder() \
-            .with_element_to_extract(ExtractElementType.TEXT) \
+            .with_elements_to_extract([ExtractElementType.TEXT, ExtractElementType.TABLES]) \
+            .with_get_char_info(True) \
+            .with_table_structure_format(TableStructureType.CSV) \
+            .with_elements_to_extract_renditions([ExtractRenditionsElementType.FIGURES, ExtractRenditionsElementType.TABLES]) \
+            .with_include_styling_info(True) \
             .build()
         extract_pdf_operation.set_options(extract_pdf_options)
 
@@ -46,7 +50,7 @@ def extract_all_from_pdf(source_file):
         result: FileRef = extract_pdf_operation.execute(execution_context)
 
         # Save the result to the specified location.
-        result.save_as(base_path + f"/output/{pdf_name}ExtractAllFromPdf.zip")
+        result.save_as(base_path + f"/output/{pdf_name}-Extracted-Json-Schema.zip")
     except (ServiceApiException, ServiceUsageException, SdkException):
         logging.exception("Exception encountered while executing operation")
 	
