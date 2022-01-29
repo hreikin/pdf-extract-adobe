@@ -75,9 +75,12 @@ def do_something_with_json(schema_source):
         for filename in filenames:
             if filename.endswith(".json"):
                 file = os.path.join(root, filename)
+                txt_file = os.path.join(root, filename.replace(".json", ".txt"))
                 with open(file, "r") as stream:
                     extracted_json = json.loads(stream.read())
                 for item in extracted_json["elements"][:]:
                     for k, v in item.items():
                         if k == "Text":
-                            print(v)
+                            with open(txt_file, "a") as stream:
+                                print(v)
+                                stream.write(v + "\n")
