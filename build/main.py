@@ -16,10 +16,10 @@ extraction.do_something_with_json(schema_source)
 
 # Convert PDF files to images.
 pdf_path = os.path.realpath("../test/pdfs/")
-image_path = os.path.realpath("../test/converted-images/")
+image_path = os.path.realpath("../test/converted-pdf-images/")
 image_format = "png"
 extraction.convert_pdf_to_image(pdf_path, image_path, image_format)
 
-input_path = os.path.realpath("../test/converted-images/")
+input_path = os.path.realpath("../test/converted-pdf-images/")
 output_path = os.path.realpath("../test/ocr-text-output/")
 extraction.ocr_converted_pdf_images(input_path, output_path)

@@ -67,7 +67,7 @@ ITEM_PIPELINES = {
 }
 
 # ITEM_PIPELINES = {'scrapy.pipelines.files.FilesPipeline': 1}
-FILES_STORE = '../src/'
+FILES_STORE = '../src/pdfs/'
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
