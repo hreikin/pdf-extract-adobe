@@ -57,7 +57,7 @@ def _extract_all_from_pdf(source_file):
         result: FileRef = extract_pdf_operation.execute(execution_context)
 
         # Save the result to the specified location.
-        result.save_as(base_path + f"/test/zips/{pdf_name}-Extracted-Json-Schema.zip")
+        result.save_as(base_path + f"/test/json-zips/{pdf_name}-Extracted-Json-Schema.zip")
     except (ServiceApiException, ServiceUsageException, SdkException):
         logging.exception("Exception encountered while executing operation")
 
