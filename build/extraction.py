@@ -2,6 +2,8 @@ import logging
 import os.path
 import zipfile, os, json
 
+from pdf2image import convert_from_path
+
 from adobe.pdfservices.operation.auth.credentials import Credentials
 from adobe.pdfservices.operation.client_config import ClientConfig
 from adobe.pdfservices.operation.exception.exceptions import ServiceApiException, ServiceUsageException, SdkException
@@ -15,7 +17,12 @@ from adobe.pdfservices.operation.pdfops.options.extractpdf.table_structure_type 
 
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
 
-def extract_all_from_pdf(source_file):
+def extract_pdf_adobe(source_path):
+    for root, dirnames, filenames in os.walk(source_path):
+        for filename in filenames:
+            _extract_all_from_pdf(filename)
+
+def _extract_all_from_pdf(source_file):
     try:
         # get base path.
         base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -34,7 +41,7 @@ def extract_all_from_pdf(source_file):
         extract_pdf_operation = ExtractPDFOperation.create_new()
 
         # Set operation input from a source file.
-        source = FileRef.create_from_local_file(base_path + "/test/" + source_file)
+        source = FileRef.create_from_local_file(base_path + "/test/pdfs/" + source_file)
         extract_pdf_operation.set_input(source)
 
         # Build ExtractPDF options and set them into the operation
@@ -51,22 +58,21 @@ def extract_all_from_pdf(source_file):
         result: FileRef = extract_pdf_operation.execute(execution_context)
 
         # Save the result to the specified location.
-        result.save_as(base_path + f"/test/{pdf_name}-Extracted-Json-Schema.zip")
+        result.save_as(base_path + f"/test/zips/{pdf_name}-Extracted-Json-Schema.zip")
     except (ServiceApiException, ServiceUsageException, SdkException):
         logging.exception("Exception encountered while executing operation")
 
 
-def extract_json_from_zip(json_source):
+def extract_json_from_zip(zip_source, output_path):
     # Extracts Json Schema from zip file.
-    os.chdir(json_source)
-    for file in os.listdir(json_source):
-        if zipfile.is_zipfile(file):
-            dirname = file.rstrip(".zip")
-            output_path = os.path.join(json_source + "/json/" + dirname)
-            if not os.path.isdir(output_path):
-                os.makedirs(output_path, exist_ok=True)
-            with zipfile.ZipFile(file) as item:
-                item.extractall(output_path)
+    with os.scandir(zip_source) as file_list:
+        for file in file_list:
+            if zipfile.is_zipfile(file):
+                dirname = file.name.rstrip(".zip")
+                if not os.path.isdir(output_path):
+                    os.makedirs(output_path, exist_ok=True)
+                with zipfile.ZipFile(file) as item:
+                    item.extractall(output_path + "/" + dirname)
 
 
 def do_something_with_json(schema_source):
@@ -78,9 +84,18 @@ def do_something_with_json(schema_source):
                 txt_file = os.path.join(root, filename.replace(".json", ".txt"))
                 with open(file, "r") as stream:
                     extracted_json = json.loads(stream.read())
-                for item in extracted_json["elements"][:]:
+                for item in extracted_json["elements"]:
                     for k, v in item.items():
                         if k == "Text":
+                            # print(v)
                             with open(txt_file, "a") as stream:
-                                print(v)
                                 stream.write(v + "\n")
+
+def convert_pdf_to_image(input_path, output_path, format):
+    for root, dirnames, filenames in os.walk(input_path):
+        for filename in filenames:
+            image_name = filename.rstrip(".pdf") + "_page_"
+            images_path = output_path + "/" + filename.rstrip(".pdf") + "/"
+            if not os.path.isdir(images_path):
+                os.makedirs(images_path, exist_ok=True)
+            convert_from_path(root + "/" + filename, output_folder=images_path, output_file=image_name, thread_count=8, fmt=format)
