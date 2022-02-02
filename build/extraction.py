@@ -83,11 +83,24 @@ def do_something_with_json(schema_source):
                 txt_file = os.path.join(root, filename.replace(".json", ".txt"))
                 with open(file, "r") as stream:
                     extracted_json = json.loads(stream.read())
-                for item in extracted_json["elements"]:
-                    for k, v in item.items():
-                        if k == "Text":
-                            with open(txt_file, "a") as stream:
-                                stream.write(v + "\n")
+                _iterate_through_nested_dicts(extracted_json, txt_file)
+
+def _iterate_through_nested_dicts(nested_dict, output_file):
+    for key,value in nested_dict.items():
+        if isinstance(value, dict):
+            _iterate_through_nested_dicts(value, output_file)
+        elif isinstance(value, list):
+            for item in value:
+                if isinstance(item, dict):
+                    _iterate_through_nested_dicts(item, output_file)
+                elif isinstance(value, list):
+                    for item in value:
+                        if isinstance(item, dict):
+                            _iterate_through_nested_dicts(item, output_file)
+        else:
+            if key == "Text":
+                with open(output_file, "a") as stream:
+                    stream.write(value + "\n")
 
 def convert_pdf_to_image(input_path, output_path, format):
     for root, dirnames, filenames in os.walk(input_path):
