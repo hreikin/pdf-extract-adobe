@@ -1,7 +1,6 @@
-import logging
-import os.path
-import zipfile, os, json
+import logging, os.path, zipfile, os, json, pytesseract
 
+from PIL import Image
 from pdf2image import convert_from_path
 
 from adobe.pdfservices.operation.auth.credentials import Credentials
@@ -98,3 +97,17 @@ def convert_pdf_to_image(input_path, output_path, format):
             if not os.path.isdir(images_path):
                 os.makedirs(images_path, exist_ok=True)
             convert_from_path(root + "/" + filename, output_folder=images_path, output_file=image_name, thread_count=8, fmt=format)
+
+def ocr_converted_pdf_images(input_path, output_path):
+    with os.scandir(input_path) as dirs_list:
+        for directory in dirs_list:
+            for root, dirnames, filenames in os.walk(directory):
+                split_filenames = filenames[0].split("_page_")
+                txt_file_name = split_filenames[0] + "-ocr.txt"
+                txt_file_path = output_path + "/" + txt_file_name
+                if not os.path.isdir(output_path):
+                    os.makedirs(output_path, exist_ok=True)
+                for filename in filenames:
+                    image_file_path = root + "/" + filename
+                    with open(txt_file_path, "a") as stream:
+                        stream.write(pytesseract.image_to_string(Image.open(image_file_path)))
