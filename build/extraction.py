@@ -76,7 +76,7 @@ def extract_json_from_zip(zip_source, output_path):
 
 
 def do_something_with_json(schema_source):
-    # Loads Json Schema and prints the output.
+    # Targets "Text" entries from the Json Schema and adds them to a file.
     for root, dirnames, filenames in os.walk(schema_source):
         for filename in filenames:
             if filename.endswith(".json"):
@@ -87,7 +87,6 @@ def do_something_with_json(schema_source):
                 for item in extracted_json["elements"]:
                     for k, v in item.items():
                         if k == "Text":
-                            # print(v)
                             with open(txt_file, "a") as stream:
                                 stream.write(v + "\n")
 

@@ -1,12 +1,13 @@
 # PDF Content Extraction Using Adobe Extract API
 
 ## Install
-Place `Adobe PDF Extract API` credentials in root of repository.
+- Place `Adobe PDF Extract API` credentials in root of repository.
+- Install `Tesseract OCR` for your OS.
 
 ```
 python3 -m venv .venv
 source .venv/bin/activate
-pip install scrapy pdfservices-sdk
+pip install scrapy pdfservices-sdk pdf2image pytesseract
 ```
 
 ## Known Issue & Workaround
@@ -23,4 +24,5 @@ shutil.copy(self._file_path, abs_path)
 ## TODO
 - [x] Create broad function to target all required items
 - [x] Display text only output using print or similar
+- [ ] Accuracy check of extracted Json
 - [ ] Create database with Json
