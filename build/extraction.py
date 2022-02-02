@@ -108,7 +108,6 @@ def ocr_converted_pdf_images(input_path, output_path):
                 if not os.path.isdir(output_path):
                     os.makedirs(output_path, exist_ok=True)
                 sorted_filenames_list = sorted(filenames)
-                print(sorted_filenames_list)
                 for filename in sorted_filenames_list:
                     image_file_path = root + "/" + filename
                     with open(txt_file_path, "a") as stream:
