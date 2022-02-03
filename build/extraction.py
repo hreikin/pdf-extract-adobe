@@ -1,7 +1,4 @@
-import logging, os.path, zipfile, os, json, pytesseract
-
-from PIL import Image
-from pdf2image import convert_from_path
+import logging, zipfile, os
 
 from adobe.pdfservices.operation.auth.credentials import Credentials
 from adobe.pdfservices.operation.client_config import ClientConfig
@@ -26,23 +23,18 @@ def _extract_all_from_pdf(source_file):
         # get base path.
         base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         pdf_name = source_file.rstrip(".pdf")
-
         # Initial setup, create credentials instance.
         credentials = Credentials.service_account_credentials_builder() \
             .from_file(base_path + "/pdfservices-api-credentials.json") \
             .build()
-
         # Create client config instance with custom time-outs.
         client_config = ClientConfig.builder().with_connect_timeout(10000).with_read_timeout(40000).build()
-
         # Create an ExecutionContext using credentials and create a new operation instance.
         execution_context = ExecutionContext.create(credentials, client_config)
         extract_pdf_operation = ExtractPDFOperation.create_new()
-
         # Set operation input from a source file.
         source = FileRef.create_from_local_file(base_path + "/test/pdfs/" + source_file)
         extract_pdf_operation.set_input(source)
-
         # Build ExtractPDF options and set them into the operation
         extract_pdf_options: ExtractPDFOptions = ExtractPDFOptions.builder() \
             .with_elements_to_extract([ExtractElementType.TEXT, ExtractElementType.TABLES]) \
@@ -52,10 +44,8 @@ def _extract_all_from_pdf(source_file):
             .with_include_styling_info(True) \
             .build()
         extract_pdf_operation.set_options(extract_pdf_options)
-
         # Execute the operation.
         result: FileRef = extract_pdf_operation.execute(execution_context)
-
         # Save the result to the specified location.
         result.save_as(base_path + f"/test/json-zips/{pdf_name}-Extracted-Json-Schema.zip")
     except (ServiceApiException, ServiceUsageException, SdkException):
@@ -72,56 +62,3 @@ def extract_json_from_zip(zip_source, output_path):
                     os.makedirs(output_path, exist_ok=True)
                 with zipfile.ZipFile(file) as item:
                     item.extractall(output_path + "/" + dirname)
-
-
-def do_something_with_json(schema_source):
-    # Targets "Text" entries from the Json Schema and adds them to a file.
-    for root, dirnames, filenames in os.walk(schema_source):
-        for filename in filenames:
-            if filename.endswith(".json"):
-                file = os.path.join(root, filename)
-                txt_file = os.path.join(root, filename.replace(".json", ".txt"))
-                with open(file, "r") as stream:
-                    extracted_json = json.loads(stream.read())
-                _iterate_through_nested_dicts(extracted_json, txt_file)
-
-def _iterate_through_nested_dicts(nested_dict, output_file):
-    for key,value in nested_dict.items():
-        if isinstance(value, dict):
-            _iterate_through_nested_dicts(value, output_file)
-        elif isinstance(value, list):
-            for item in value:
-                if isinstance(item, dict):
-                    _iterate_through_nested_dicts(item, output_file)
-                elif isinstance(value, list):
-                    for item in value:
-                        if isinstance(item, dict):
-                            _iterate_through_nested_dicts(item, output_file)
-        else:
-            if key == "Text":
-                with open(output_file, "a") as stream:
-                    stream.write(value + "\n")
-
-def convert_pdf_to_image(input_path, output_path, format):
-    for root, dirnames, filenames in os.walk(input_path):
-        for filename in filenames:
-            image_name = filename.rstrip(".pdf") + "_page_"
-            images_path = output_path + "/" + filename.rstrip(".pdf") + "/"
-            if not os.path.isdir(images_path):
-                os.makedirs(images_path, exist_ok=True)
-            convert_from_path(root + "/" + filename, output_folder=images_path, output_file=image_name, thread_count=8, fmt=format)
-
-def ocr_converted_pdf_images(input_path, output_path):
-    with os.scandir(input_path) as dirs_list:
-        for directory in dirs_list:
-            for root, dirnames, filenames in os.walk(directory):
-                split_filenames = filenames[0].split("_page_")
-                txt_file_name = split_filenames[0] + "-ocr.txt"
-                txt_file_path = output_path + "/" + txt_file_name
-                if not os.path.isdir(output_path):
-                    os.makedirs(output_path, exist_ok=True)
-                sorted_filenames_list = sorted(filenames)
-                for filename in sorted_filenames_list:
-                    image_file_path = root + "/" + filename
-                    with open(txt_file_path, "a") as stream:
-                        stream.write(pytesseract.image_to_string(Image.open(image_file_path)))
