@@ -145,11 +145,11 @@ def confidence_check(input_path):
     for pdf, scores in final_score_dict.items():
         print(f"{pdf}".ljust(50))
         for key, value in scores.items():
-                print(f"{key}:".ljust(50) + f"{value}".rjust(30))
+                print(f"{key}:".ljust(50) + f"{round(value, 2)}".rjust(30))
     output_file = "../test/confidence-score.txt"
     with open(output_file, "w") as stream:
         for pdf, scores in final_score_dict.items():
-            stream.write(f"{pdf}:\n")
+            stream.write("\n")
+            stream.write(f"{pdf}:".ljust(50) + f"Score\n".rjust(30))
             for key, value in scores.items():
-                stream.write(f"\t{key}:\t{value}\n")
-            stream.write("")
+                stream.write(f"{key}:".ljust(50) + f"\t{round(value, 2)}\n".rjust(30))
