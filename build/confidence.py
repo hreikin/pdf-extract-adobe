@@ -137,8 +137,15 @@ def confidence_check(input_path):
                 "Score B" : score_b.ratio(),
                 "Score Average" : final_score
             }
+    print("\nPDF FILE".ljust(50) + "SCORE".rjust(30))
     for pdf, scores in final_score_dict.items():
-        print(f"{pdf}:")
         for key, value in scores.items():
-            print(f"\t{key}:\t{value}")
-        print("")
+            if key == "Score Average":
+                print(f"{pdf}:".ljust(50) + f"{value}".rjust(30))
+    output_file = "../test/confidence-score.txt"
+    with open(output_file, "w") as stream:
+        for pdf, scores in final_score_dict.items():
+            stream.write(f"{pdf}:\n")
+            for key, value in scores.items():
+                stream.write(f"\t{key}:\t{value}\n")
+            stream.write("")
