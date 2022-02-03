@@ -59,12 +59,21 @@ def ocr_converted_pdf_images(input_path, output_path):
                     with open(txt_file_path, "a") as stream:
                         stream.write(pytesseract.image_to_string(Image.open(image_file_path)))
 
-def accuracy_check(json_schema_txt, ocr_txt):
-    with open(json_schema_txt) as stream:
-        txt_json = stream.read()
-    with open(ocr_txt) as stream:
-        txt_ocr = stream.read()
-    score_a = SequenceMatcher(None, txt_json, txt_ocr)
-    score_b = SequenceMatcher(None, txt_ocr, txt_json)
-    print(f"Score A: {score_a.ratio()}")
-    print(f"Score B: {score_b.ratio()}")
+def accuracy_check(input_path):
+    with os.scandir(input_path) as dirs_list:
+        for directory in dirs_list:
+            for root, dirnames, filenames in os.walk(directory):
+                for filename in filenames:
+                    if filename == "structuredData.txt":
+                        json_schema_txt = input_path + "/" + directory.name + "/" + filename
+                    elif filename.endswith("-ocr.txt"):
+                        ocr_txt = input_path + "/" + directory.name + "/" + filename
+            with open(json_schema_txt) as stream:
+                txt_json = stream.read()
+            with open(ocr_txt) as stream:
+                txt_ocr = stream.read()
+            print(f"Comparing:\n{json_schema_txt}\n{ocr_txt}")
+            score_a = SequenceMatcher(None, txt_json, txt_ocr)
+            score_b = SequenceMatcher(None, txt_ocr, txt_json)
+            print(f"Score A: {score_a.ratio()}")
+            print(f"Score B: {score_b.ratio()}")

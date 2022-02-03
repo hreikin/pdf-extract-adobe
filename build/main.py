@@ -26,6 +26,5 @@ output_path = os.path.realpath("../test/json-schema/")
 accuracy.ocr_converted_pdf_images(input_path, output_path)
 
 # Accuracy Check
-json_txt = os.path.realpath("../test/json-schema/Daresbury_labs_CS.1-Extracted-Json-Schema/structuredData.txt")
-ocr_txt = os.path.realpath("../test/json-schema/Daresbury_labs_CS.1-Extracted-Json-Schema/Daresbury_labs_CS.1-ocr.txt")
-accuracy.accuracy_check(json_txt, ocr_txt)
+input_path = os.path.realpath("../test/json-schema/")
+accuracy.accuracy_check(input_path)
