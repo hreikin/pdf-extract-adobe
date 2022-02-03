@@ -5,6 +5,15 @@ from pdf2image import convert_from_path
 from difflib import SequenceMatcher
 
 def extract_text_from_json(schema_source):
+    """
+    This function walks through a given directory finding all JSON files. Then 
+    it extracts the JSON into a dictionary and creates an output text filepath.
+    
+    It then calls the sub function "_iterate_through_nested_dicts()" on every 
+    dictionary individually passing it the text filepath as the output file.
+
+    :param schema_source: A directory containing JSON files.
+    """
     # Targets "Text" entries from the Json Schema and adds them to a file.
     for root, dirnames, filenames in os.walk(schema_source):
         for filename in filenames:
@@ -16,6 +25,17 @@ def extract_text_from_json(schema_source):
                 _iterate_through_nested_dicts(extracted_json, txt_file)
 
 def _iterate_through_nested_dicts(nested_dict, output_file):
+    """
+    Iterates through a dictionary targeting certain keys and values which are 
+    written to an output file, it also checks if the values contain nested lists 
+    or dictionaries, if they do it recursively calls this function on them.
+
+    This sub function is called on the extracted JSON files which are found by 
+    the function "extract_text_from_json()".
+
+    :param nested_dict: A JSON dictionary.
+    :param output_file: File to output targeted values to.
+    """
     for key,value in nested_dict.items():
         if isinstance(value, dict):
             _iterate_through_nested_dicts(value, output_file)
@@ -33,6 +53,18 @@ def _iterate_through_nested_dicts(nested_dict, output_file):
                     stream.write(value + "\n")
 
 def convert_pdf_to_image(input_path, output_path, format):
+    """
+    Finds all PDF files within a directory and converts each page of each PDF to 
+    an image using pdf2image. 
+    
+    The "convert_from_path()" parameter "thread_count" sets how many threads to 
+    use for the conversion. The amount of threads used is never more than the 
+    number of pages in a PDF.
+
+    :param input_path: Directory containing PDF files.
+    :param output_path: Directory to output the converted images to.
+    :param format: Format of the converted image.
+    """
     for root, dirnames, filenames in os.walk(input_path):
         for filename in filenames:
             image_name = filename.rstrip(".pdf") + "_page_"
@@ -42,6 +74,14 @@ def convert_pdf_to_image(input_path, output_path, format):
             convert_from_path(root + "/" + filename, output_folder=images_path, output_file=image_name, thread_count=8, fmt=format)
 
 def ocr_converted_pdf_images(input_path, output_path):
+    """
+    Find all the converted images from the function "convert_pdf_to_image()" and 
+    process with pytesseract and Tesseract OCR to create a text file with the 
+    found content.
+
+    :param input_path: Directory containing directories of images created with the function "convert_pdf_to_image()".
+    :param output_path: Text file to write the OCR content to.
+    """
     with os.scandir(input_path) as dirs_list:
         for directory in dirs_list:
             for root, dirnames, filenames in os.walk(directory):
@@ -61,6 +101,21 @@ def ocr_converted_pdf_images(input_path, output_path):
                         stream.write(ocr_string)
 
 def confidence_check(input_path):
+    """
+    Walks through all directories in the given input path and finds two 
+    pre-determined files to be used for a very basic confidence check.
+
+    The confidence check uses the difflib sequence matcher to compares two files 
+    created with the "_iterate_through_nested_dicts()" and 
+    "ocr_converted_pdf_images()" functions before returning a score.
+
+    The comparison is done both ways on the two files to create two different 
+    scores which are then used to create an average confidence score for the 
+    file. The scores for all files are added to a dictionary which is then 
+    printed to the console to display the results.
+
+    :param input_path: Directory containing other directories which contain the JSON Schema and extracted/OCR text files.
+    """
     final_score_dict = {}
     with os.scandir(input_path) as dirs_list:
         for directory in dirs_list:

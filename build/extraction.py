@@ -11,14 +11,32 @@ from adobe.pdfservices.operation.pdfops.extract_pdf_operation import ExtractPDFO
 from adobe.pdfservices.operation.pdfops.options.extractpdf.extract_renditions_element_type import ExtractRenditionsElementType
 from adobe.pdfservices.operation.pdfops.options.extractpdf.table_structure_type import TableStructureType
 
+# Logging for the adobe API
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
 
 def extract_pdf_adobe(source_path):
+    """
+    This function walks through a given directory and in turn calls the sub 
+    function "_extract_all_from_pdf()" on every PDF file found.
+
+    :param source_path: A directory containing PDF files.
+    """
     for root, dirnames, filenames in os.walk(source_path):
         for filename in filenames:
-            _extract_all_from_pdf(filename)
+            if filename.endswith(".pdf"):
+                _extract_all_from_pdf(filename)
 
 def _extract_all_from_pdf(source_file):
+    """
+    Takes an input PDF file and builds a request which is sent to the Adobe PDF 
+    Extract API. 
+    
+    This downloads a zip file containing the JSON Schema extracted from the 
+    source file. This sub function is called on every PDF file in the source 
+    directory by the "extract_pdf_adobe()" function.
+
+    :param source_file: A PDF file.
+    """
     try:
         # get base path.
         base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -53,6 +71,13 @@ def _extract_all_from_pdf(source_file):
 
 
 def extract_json_from_zip(zip_source, output_path):
+    """
+    Finds all zip files within a source directory and unzips them to a given 
+    output directory.
+
+    :param zip_source: A directory containing zip files.
+    :param output_path: The directory to extract the zip contents in to.
+    """
     # Extracts Json Schema from zip file.
     with os.scandir(zip_source) as file_list:
         for file in file_list:
