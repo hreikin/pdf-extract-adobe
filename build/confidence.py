@@ -47,8 +47,8 @@ def ocr_converted_pdf_images(input_path, output_path):
             for root, dirnames, filenames in os.walk(directory):
                 split_filenames = filenames[0].split("_page_")
                 txt_file_name = split_filenames[0] + "-ocr.txt"
-                txt_file_path = output_path + "/" + split_filenames[0] + "-Extracted-Json-Schema" + "/" + txt_file_name
                 txt_file_dir = output_path + "/" + split_filenames[0] + "-Extracted-Json-Schema" + "/"
+                txt_file_path = txt_file_dir + txt_file_name
                 if not os.path.isdir(txt_file_dir):
                     os.makedirs(txt_file_dir, exist_ok=True)
                 if not os.path.isdir(output_path):
@@ -56,10 +56,12 @@ def ocr_converted_pdf_images(input_path, output_path):
                 sorted_filenames_list = sorted(filenames)
                 for filename in sorted_filenames_list:
                     image_file_path = root + "/" + filename
+                    ocr_string = pytesseract.image_to_string(Image.open(image_file_path))
                     with open(txt_file_path, "a") as stream:
-                        stream.write(pytesseract.image_to_string(Image.open(image_file_path)))
+                        stream.write(ocr_string)
 
 def confidence_check(input_path):
+    final_score_dict = {}
     with os.scandir(input_path) as dirs_list:
         for directory in dirs_list:
             for root, dirnames, filenames in os.walk(directory):
@@ -72,8 +74,16 @@ def confidence_check(input_path):
                 txt_json = stream.read()
             with open(ocr_txt) as stream:
                 txt_ocr = stream.read()
-            print(f"Comparing:\n{json_schema_txt}\n{ocr_txt}")
             score_a = SequenceMatcher(None, txt_json, txt_ocr)
             score_b = SequenceMatcher(None, txt_ocr, txt_json)
-            print(f"Score A: {score_a.ratio()}")
-            print(f"Score B: {score_b.ratio()}")
+            final_score = (score_a.ratio() + score_b.ratio()) / 2
+            final_score_dict[directory.name.replace('-Extracted-Json-Schema', '')] = {
+                "Score A" : score_a.ratio(),
+                "Score B" : score_b.ratio(),
+                "Score Average" : final_score
+            }
+    for pdf, scores in final_score_dict.items():
+        print(f"{pdf}:")
+        for key, value in scores.items():
+            print(f"\t{key}:\t{value}")
+        print("")
