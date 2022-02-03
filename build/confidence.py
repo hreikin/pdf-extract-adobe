@@ -125,23 +125,27 @@ def confidence_check(input_path):
                         json_schema_txt = input_path + "/" + directory.name + "/" + filename
                     elif filename.endswith("-ocr.txt"):
                         ocr_txt = input_path + "/" + directory.name + "/" + filename
+            ####################################################################
+            # The Python docs state that "ratio()"" returns a float in [0, 1], 
+            # measuring the similarity of the sequences. As a rule of thumb, a 
+            # "ratio()"" value over 0.6 means the sequences are close matches:
             with open(json_schema_txt) as stream:
                 txt_json = stream.read()
             with open(ocr_txt) as stream:
                 txt_ocr = stream.read()
             score_a = SequenceMatcher(None, txt_json, txt_ocr)
             score_b = SequenceMatcher(None, txt_ocr, txt_json)
-            final_score = (score_a.ratio() + score_b.ratio()) / 2
+            average_score = (score_a.ratio() + score_b.ratio()) / 2
             final_score_dict[directory.name.replace('-Extracted-Json-Schema', '')] = {
                 "Score A" : score_a.ratio(),
                 "Score B" : score_b.ratio(),
-                "Score Average" : final_score
+                "Score Average" : average_score,
             }
     print("\nPDF FILE".ljust(50) + "SCORE".rjust(30))
     for pdf, scores in final_score_dict.items():
+        print(f"{pdf}".ljust(50))
         for key, value in scores.items():
-            if key == "Score Average":
-                print(f"{pdf}:".ljust(50) + f"{value}".rjust(30))
+                print(f"{key}:".ljust(50) + f"{value}".rjust(30))
     output_file = "../test/confidence-score.txt"
     with open(output_file, "w") as stream:
         for pdf, scores in final_score_dict.items():
