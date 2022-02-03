@@ -59,7 +59,7 @@ def ocr_converted_pdf_images(input_path, output_path):
                     with open(txt_file_path, "a") as stream:
                         stream.write(pytesseract.image_to_string(Image.open(image_file_path)))
 
-def accuracy_check(input_path):
+def confidence_check(input_path):
     with os.scandir(input_path) as dirs_list:
         for directory in dirs_list:
             for root, dirnames, filenames in os.walk(directory):
