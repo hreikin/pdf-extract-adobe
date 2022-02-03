@@ -47,7 +47,10 @@ def ocr_converted_pdf_images(input_path, output_path):
             for root, dirnames, filenames in os.walk(directory):
                 split_filenames = filenames[0].split("_page_")
                 txt_file_name = split_filenames[0] + "-ocr.txt"
-                txt_file_path = output_path + "/" + txt_file_name
+                txt_file_path = output_path + "/" + split_filenames[0] + "-Extracted-Json-Schema" + "/" + txt_file_name
+                txt_file_dir = output_path + "/" + split_filenames[0] + "-Extracted-Json-Schema" + "/"
+                if not os.path.isdir(txt_file_dir):
+                    os.makedirs(txt_file_dir, exist_ok=True)
                 if not os.path.isdir(output_path):
                     os.makedirs(output_path, exist_ok=True)
                 sorted_filenames_list = sorted(filenames)
