@@ -133,12 +133,18 @@ def confidence_check(input_path):
                 txt_json = stream.read()
             with open(ocr_txt) as stream:
                 txt_ocr = stream.read()
+            reverse_txt_json = txt_json[::-1]
+            reverse_txt_ocr = txt_ocr[::-1]
             score_a = SequenceMatcher(None, txt_json, txt_ocr)
             score_b = SequenceMatcher(None, txt_ocr, txt_json)
-            average_score = (score_a.ratio() + score_b.ratio()) / 2
+            score_c = SequenceMatcher(None, reverse_txt_json, reverse_txt_ocr)
+            score_d = SequenceMatcher(None, reverse_txt_ocr, reverse_txt_json)
+            average_score = (score_a.ratio() + score_b.ratio() + score_c.ratio() + score_d.ratio()) / 4
             final_score_dict[directory.name.replace('-Extracted-Json-Schema', '')] = {
                 "Score A" : score_a.ratio(),
                 "Score B" : score_b.ratio(),
+                "Score C" : score_c.ratio(),
+                "Score D" : score_d.ratio(),
                 "Score Average" : average_score,
             }
     print("\nPDF FILE".ljust(50) + "SCORE".rjust(30))
@@ -148,8 +154,9 @@ def confidence_check(input_path):
                 print(f"{key}:".ljust(50) + f"{round(value, 2)}".rjust(30))
     output_file = "../test/confidence-score.txt"
     with open(output_file, "w") as stream:
+        stream.write(f"PDF".ljust(50) + f"Score\n".rjust(30))
         for pdf, scores in final_score_dict.items():
             stream.write("\n")
-            stream.write(f"{pdf}:".ljust(50) + f"Score\n".rjust(30))
+            stream.write(f"{pdf}\n")
             for key, value in scores.items():
                 stream.write(f"{key}:".ljust(50) + f"\t{round(value, 2)}\n".rjust(30))
