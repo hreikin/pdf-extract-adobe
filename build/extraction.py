@@ -81,8 +81,7 @@ def extract_json_from_zip(zip_source, output_path):
     :param output_path: The directory to extract the zip contents in to.
     """
     # Extracts Json Schema from zip file.
-    if not Path(output_path).exists():
-        Path(output_path).mkdir(parents=True, exist_ok=True)
+    Path(output_path).mkdir(parents=True, exist_ok=True)
     zip_file_list = sorted(Path(zip_source).rglob("*.zip"))
     for zip_file in zip_file_list:
         dir_name = zip_file.stem
