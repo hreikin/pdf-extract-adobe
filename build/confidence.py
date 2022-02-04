@@ -1,5 +1,6 @@
-import os, json, pytesseract, fitz
+import json, pytesseract, fitz, os
 
+from pathlib import Path
 from PIL import Image
 from pdf2image import convert_from_path
 from difflib import SequenceMatcher
@@ -15,14 +16,12 @@ def extract_text_from_json(schema_source):
     :param schema_source: A directory containing JSON files.
     """
     # Targets "Text" entries from the Json Schema and adds them to a file.
-    for root, dirnames, filenames in os.walk(schema_source):
-        for filename in filenames:
-            if filename.endswith(".json"):
-                file = os.path.join(root, filename)
-                txt_file = os.path.join(root, filename.replace(".json", ".txt"))
-                with open(file, "r") as stream:
-                    extracted_json = json.loads(stream.read())
-                _iterate_through_nested_dicts(extracted_json, txt_file)
+    json_file_list = Path(schema_source).rglob("*.json")
+    for json_file in json_file_list:
+        txt_output = json_file.with_suffix(".txt")
+        with json_file.open() as stream:
+            extracted_json = json.loads(stream.read())
+        _iterate_through_nested_dicts(extracted_json, txt_output)
 
 def _iterate_through_nested_dicts(nested_dict, output_file):
     """
@@ -65,15 +64,14 @@ def convert_pdf_to_image(input_path, output_path, format):
     :param output_path: Directory to output the converted images to.
     :param format: Format of the converted image.
     """
-    for root, dirnames, filenames in os.walk(input_path):
-        for filename in filenames:
-            image_name = filename.rstrip(".pdf") + "_page_"
-            images_path = output_path + "/" + filename.rstrip(".pdf") + "/"
-            if not os.path.isdir(images_path):
-                os.makedirs(images_path, exist_ok=True)
-            convert_from_path(root + "/" + filename, output_folder=images_path, output_file=image_name, thread_count=8, fmt=format)
+    pdf_file_list = Path(input_path).rglob("*.pdf")
+    for pdf_file in pdf_file_list:
+        image_name = pdf_file.stem + "_page_"
+        images_path = output_path + pdf_file.stem
+        Path(images_path).mkdir(parents=True, exist_ok=True)
+        convert_from_path(pdf_file, output_folder=images_path, output_file=image_name, thread_count=8, fmt=format)
 
-def ocr_converted_pdf_images(input_path, output_path):
+def ocr_converted_pdf_images(input_path, output_path, format):
     """
     Find all the converted images from the function "convert_pdf_to_image()" and 
     process with pytesseract and Tesseract OCR to create a text file with the 
@@ -82,23 +80,16 @@ def ocr_converted_pdf_images(input_path, output_path):
     :param input_path: Directory containing directories of images created with the function "convert_pdf_to_image()".
     :param output_path: Text file to write the OCR content to.
     """
-    with os.scandir(input_path) as dirs_list:
-        for directory in dirs_list:
-            for root, dirnames, filenames in os.walk(directory):
-                split_filenames = filenames[0].split("_page_")
-                txt_file_name = split_filenames[0] + "-ocr.txt"
-                txt_file_dir = output_path + "/" + split_filenames[0] + "-Extracted-Json-Schema" + "/"
-                txt_file_path = txt_file_dir + txt_file_name
-                if not os.path.isdir(txt_file_dir):
-                    os.makedirs(txt_file_dir, exist_ok=True)
-                if not os.path.isdir(output_path):
-                    os.makedirs(output_path, exist_ok=True)
-                sorted_filenames_list = sorted(filenames)
-                for filename in sorted_filenames_list:
-                    image_file_path = root + "/" + filename
-                    ocr_string = pytesseract.image_to_string(Image.open(image_file_path))
-                    with open(txt_file_path, "a") as stream:
-                        stream.write(ocr_string)
+    input_path = Path(input_path)
+    output_path = Path(output_path)
+    for directory in input_path.iterdir():
+        images_file_list = sorted(Path(directory).rglob(f"*.{format}"))
+        for item in images_file_list:
+            split_name = item.name.split("_page_")
+            txt_file_path = f"{output_path}/{split_name[0]}-Extracted-Json-Schema/{split_name[0]}-OCR.txt"
+            ocr_string = pytesseract.image_to_string(Image.open(item))
+            with open(txt_file_path, "a") as stream:
+                stream.write(ocr_string)
 
 def confidence_check_text(input_path):
     """
@@ -116,29 +107,27 @@ def confidence_check_text(input_path):
 
     :param input_path: Directory containing other directories which contain the JSON Schema and extracted/OCR text files.
     """
-    final_score_dict = {}
-    with os.scandir(input_path) as dirs_list:
-        for directory in dirs_list:
-            for root, dirnames, filenames in os.walk(directory):
-                for filename in filenames:
-                    if filename == "structuredData.txt":
-                        json_schema_txt = input_path + "/" + directory.name + "/" + filename
-                    elif filename.endswith("-ocr.txt"):
-                        ocr_txt = input_path + "/" + directory.name + "/" + filename
+    input_path = Path(input_path)
+    final_score_dict = dict()
+    for directory in input_path.iterdir():
+        if directory.is_dir():
+            txt_file_list = sorted(directory.rglob("*.txt"))
+            ocr_txt_file = txt_file_list[0]
+            json_txt_file = txt_file_list[-1]
+            with open(ocr_txt_file) as stream:
+                ocr_string = stream.read()
+            with open(json_txt_file) as stream:
+                json_string = stream.read()
+            reverse_ocr_string = ocr_string[::-1]
+            reverse_json_string = json_string[::-1]
             ####################################################################
             # The Python docs state that "ratio()"" returns a float in [0, 1], 
             # measuring the similarity of the sequences. As a rule of thumb, a 
-            # "ratio()"" value over 0.6 means the sequences are close matches:
-            with open(json_schema_txt) as stream:
-                txt_json = stream.read()
-            with open(ocr_txt) as stream:
-                txt_ocr = stream.read()
-            reverse_txt_json = txt_json[::-1]
-            reverse_txt_ocr = txt_ocr[::-1]
-            score_a = SequenceMatcher(None, txt_json, txt_ocr)
-            score_b = SequenceMatcher(None, txt_ocr, txt_json)
-            score_c = SequenceMatcher(None, reverse_txt_json, reverse_txt_ocr)
-            score_d = SequenceMatcher(None, reverse_txt_ocr, reverse_txt_json)
+            # "ratio()"" value over 0.6 means the sequences are close matches.
+            score_a = SequenceMatcher(None, json_string, ocr_string)
+            score_b = SequenceMatcher(None, ocr_string, json_string)
+            score_c = SequenceMatcher(None, reverse_json_string, reverse_ocr_string)
+            score_d = SequenceMatcher(None, reverse_ocr_string, reverse_json_string)
             average_score = (score_a.ratio() + score_b.ratio() + score_c.ratio() + score_d.ratio()) / 4
             final_score_dict[directory.name.replace('-Extracted-Json-Schema', '')] = {
                 "Score A" : score_a.ratio(),
