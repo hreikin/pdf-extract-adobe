@@ -33,4 +33,9 @@ confidence.ocr_converted_pdf_images(input_path, output_path)
 # Confidence Check
 input_path = os.path.realpath("../test/json-schema/")
 print("Performing basic confidence check.")
-confidence.confidence_check(input_path)
+confidence.confidence_check_text(input_path)
+
+# # Extract images from PDF for comparison
+# input_path = os.path.realpath("../test/pdfs/")
+# output_path = os.path.realpath("../test/extracted-images/")
+# confidence.extract_images_from_pdf(input_path, output_path)

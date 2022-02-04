@@ -1,4 +1,4 @@
-import os, json, pytesseract
+import os, json, pytesseract, fitz
 
 from PIL import Image
 from pdf2image import convert_from_path
@@ -100,7 +100,7 @@ def ocr_converted_pdf_images(input_path, output_path):
                     with open(txt_file_path, "a") as stream:
                         stream.write(ocr_string)
 
-def confidence_check(input_path):
+def confidence_check_text(input_path):
     """
     Walks through all directories in the given input path and finds two 
     pre-determined files to be used for a very basic confidence check.
@@ -160,3 +160,35 @@ def confidence_check(input_path):
             stream.write(f"{pdf}\n")
             for key, value in scores.items():
                 stream.write(f"{key}:".ljust(50) + f"\t{round(value, 2)}\n".rjust(30))
+
+
+
+# def extract_images_from_pdf(input_path, output_path):
+#     for root, dirnames, filenames in os.walk(input_path):
+#         for filename in filenames:
+#             doc = fitz.open(f"{input_path}/{filename}")
+#             dir_name = filename.rstrip(".pdf")
+#             dir_path = output_path + "/" + dir_name
+#             if not os.path.isdir(dir_path):
+#                 os.makedirs(dir_path, exist_ok=True)
+#             for i in range(len(doc)):
+#                 for img in doc.get_page_images(i):
+#                     xref = img[0]
+#                     pix = fitz.Pixmap(doc, xref)
+#                     if pix.n - pix.alpha < 4:       # this is GRAY or RGB
+#                         pix.save(f"{dir_path}/p{i}-{xref}.png")
+#                     else:               # CMYK: convert to RGB first
+#                         pix1 = fitz.Pixmap(fitz.csRGB, pix)
+#                         pix1.save(f"{dir_path}/p{i}-{xref}.png")
+#                         pix1 = None
+#                     pix = None
+#
+# def extract_images_from_pdf(input_path, output_path):
+#     for root, dirnames, filenames in os.walk(input_path):
+#         for filename in filenames:
+#             dir_name = filename.rstrip(".pdf")
+#             dir_path = output_path + "/" + dir_name
+#             image_name = "extracted-image"
+#             if not os.path.isdir(dir_path):
+#                 os.makedirs(dir_path, exist_ok=True)
+#             os.system(f"pdfimages -png {input_path}/{filename} {dir_path}/{image_name}")
