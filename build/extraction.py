@@ -1,5 +1,7 @@
 import logging, zipfile, os
 
+from pathlib import Path
+
 from adobe.pdfservices.operation.auth.credentials import Credentials
 from adobe.pdfservices.operation.client_config import ClientConfig
 from adobe.pdfservices.operation.exception.exceptions import ServiceApiException, ServiceUsageException, SdkException
@@ -21,10 +23,9 @@ def extract_pdf_adobe(source_path):
 
     :param source_path: A directory containing PDF files.
     """
-    for root, dirnames, filenames in os.walk(source_path):
-        for filename in filenames:
-            if filename.endswith(".pdf"):
-                _extract_all_from_pdf(filename)
+    pdf_file_list = sorted(Path(source_path).rglob("*.pdf"))
+    for pdf in pdf_file_list:
+        _extract_all_from_pdf(pdf)
 
 def _extract_all_from_pdf(source_file):
     """
@@ -39,11 +40,12 @@ def _extract_all_from_pdf(source_file):
     """
     try:
         # get base path.
-        base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        pdf_name = source_file.rstrip(".pdf")
+        base_path = Path("..").resolve()
+        source_file = Path(source_file).resolve()
+        pdf_name = source_file.stem
         # Initial setup, create credentials instance.
         credentials = Credentials.service_account_credentials_builder() \
-            .from_file(base_path + "/pdfservices-api-credentials.json") \
+            .from_file(base_path / "pdfservices-api-credentials.json") \
             .build()
         # Create client config instance with custom time-outs.
         client_config = ClientConfig.builder().with_connect_timeout(10000).with_read_timeout(40000).build()
@@ -51,7 +53,7 @@ def _extract_all_from_pdf(source_file):
         execution_context = ExecutionContext.create(credentials, client_config)
         extract_pdf_operation = ExtractPDFOperation.create_new()
         # Set operation input from a source file.
-        source = FileRef.create_from_local_file(base_path + "/test/pdfs/" + source_file)
+        source = FileRef.create_from_local_file(source_file)
         extract_pdf_operation.set_input(source)
         # Build ExtractPDF options and set them into the operation
         extract_pdf_options: ExtractPDFOptions = ExtractPDFOptions.builder() \
@@ -65,7 +67,7 @@ def _extract_all_from_pdf(source_file):
         # Execute the operation.
         result: FileRef = extract_pdf_operation.execute(execution_context)
         # Save the result to the specified location.
-        result.save_as(base_path + f"/test/json-zips/{pdf_name}-Extracted-Json-Schema.zip")
+        result.save_as(base_path / f"test/json-zips/{pdf_name}-Extracted-Json-Schema.zip")
     except (ServiceApiException, ServiceUsageException, SdkException):
         logging.exception("Exception encountered while executing operation")
 
@@ -79,11 +81,10 @@ def extract_json_from_zip(zip_source, output_path):
     :param output_path: The directory to extract the zip contents in to.
     """
     # Extracts Json Schema from zip file.
-    with os.scandir(zip_source) as file_list:
-        for file in file_list:
-            if zipfile.is_zipfile(file):
-                dirname = file.name.rstrip(".zip")
-                if not os.path.isdir(output_path):
-                    os.makedirs(output_path, exist_ok=True)
-                with zipfile.ZipFile(file) as item:
-                    item.extractall(output_path + "/" + dirname)
+    if not Path(output_path).exists():
+        Path(output_path).mkdir(parents=True, exist_ok=True)
+    zip_file_list = sorted(Path(zip_source).rglob("*.zip"))
+    for zip_file in zip_file_list:
+        dir_name = zip_file.stem
+        with zipfile.ZipFile(zip_file) as item:
+            item.extractall(output_path + "/" + dir_name)
