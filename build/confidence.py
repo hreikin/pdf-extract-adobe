@@ -3,7 +3,7 @@ import json, pytesseract, fitz, os
 from pathlib import Path
 from PIL import Image
 from pdf2image import convert_from_path
-from difflib import SequenceMatcher
+from difflib import SequenceMatcher, get_close_matches
 
 def extract_text_from_json(schema_source, output_path):
     """
@@ -122,37 +122,68 @@ def confidence_check_text(input_path):
                 ocr_string = stream.read()
             with open(json_txt_file) as stream:
                 json_string = stream.read()
+            with open(ocr_txt_file) as stream:
+                ocr_list = stream.readlines()
+            with open(json_txt_file) as stream:
+                json_list = stream.readlines()
+            close_matches_a = 0
+            for line in ocr_list:
+                matches_list = get_close_matches(line, json_list, n=1)
+                if len(matches_list) > 0:
+                    close_matches_a += 1
+                matches_list = []
+            close_match_ratio_a = close_matches_a / len(ocr_list)
+            close_matches_b = 0
+            for line in json_list:
+                matches_list = get_close_matches(line, ocr_list, n=1)
+                if len(matches_list) > 0:
+                    close_matches_b += 1
+                matches_list = []
+            close_match_ratio_b = close_matches_b / len(json_list)
+            close_match_average_ratio = (close_match_ratio_a + close_match_ratio_b) / 2
             reverse_ocr_string = ocr_string[::-1]
             reverse_json_string = json_string[::-1]
             ####################################################################
-            # The Python docs state that "ratio()"" returns a float in [0, 1], 
+            # The Python docs state that "ratio()" returns a float in [0, 1], 
             # measuring the similarity of the sequences. As a rule of thumb, a 
-            # "ratio()"" value over 0.6 means the sequences are close matches.
+            # "ratio()" value over 0.6 means the sequences are close matches.
             score_a = SequenceMatcher(None, json_string, ocr_string)
             score_b = SequenceMatcher(None, ocr_string, json_string)
             score_c = SequenceMatcher(None, reverse_json_string, reverse_ocr_string)
             score_d = SequenceMatcher(None, reverse_ocr_string, reverse_json_string)
-            average_score = (score_a.ratio() + score_b.ratio() + score_c.ratio() + score_d.ratio()) / 4
+            comparison_ratio = (score_a.ratio() + score_b.ratio() + score_c.ratio() + score_d.ratio()) / 4
+            total_average_ratio = (comparison_ratio + close_match_average_ratio) / 2
             final_score_dict[directory.name.replace('-Extracted-Json-Schema', '')] = {
-                "Score A" : score_a.ratio(),
-                "Score B" : score_b.ratio(),
-                "Score C" : score_c.ratio(),
-                "Score D" : score_d.ratio(),
-                "Score Average" : average_score,
+                "Comparison A Ratio" : score_a.ratio(),
+                "Comparison B Ratio" : score_b.ratio(),
+                "Comparison C Ratio" : score_c.ratio(),
+                "Comparison D Ratio" : score_d.ratio(),
+                "Comparison Average Ratio" : comparison_ratio,
+                "Close Match Ratio A" : close_match_ratio_a,
+                "Close Match Ratio B" : close_match_ratio_b,
+                "Close Match Average Ratio" : close_match_average_ratio,
+                "Total Average Ratio" : total_average_ratio,
             }
-    print("\nPDF FILE".ljust(50) + "SCORE".rjust(30))
+    print_keys = [
+        "Comparison Average Ratio",
+        "Close Match Average Ratio",
+        "Total Average Ratio",
+        ]
+    print("\nPDF FILE".ljust(50) + "SCORE".rjust(18))
     for pdf, scores in final_score_dict.items():
-        print(f"{pdf}".ljust(50))
+        print(f"{pdf}:".ljust(50))
         for key, value in scores.items():
-                print(f"{key}:".ljust(50) + f"{round(value, 2)}".rjust(30))
+            for keys in print_keys:
+                if key == keys:
+                    print(f"\t{key}".ljust(50) + f"{round(value, 1)}".rjust(10))
     output_file = "../test/confidence-check/all-confidence-scores.txt"
     with open(output_file, "w") as stream:
-        stream.write(f"PDF".ljust(50) + f"Score\n".rjust(30))
+        stream.write(f"PDF".ljust(50) + f"Score".rjust(30))
         for pdf, scores in final_score_dict.items():
-            stream.write("\n")
-            stream.write(f"{pdf}\n")
+            # stream.write("\n")
+            stream.write(f"\n{pdf}\n")
             for key, value in scores.items():
-                stream.write(f"{key}:".ljust(50) + f"\t{round(value, 2)}\n".rjust(30))
+                stream.write(f"\t{key}:".ljust(50) + f"{round(value, 10)}\n".rjust(30))
 
 # These functions work as intended but dont provide sufficient results. If the 
 # targeted images can be refined they could be useful for another confidence 
