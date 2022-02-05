@@ -18,8 +18,8 @@ logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
 
 def extract_pdf_adobe(source_path):
     """
-    This function walks through a given directory and in turn calls the sub 
-    function "_extract_all_from_pdf()" on every PDF file found.
+    This function recursively finds all PDF files within a given directory and 
+    then calls the sub function "_extract_all_from_pdf()" on all that are found.
 
     :param source_path: A directory containing PDF files.
     """
@@ -74,8 +74,8 @@ def _extract_all_from_pdf(source_file):
 
 def extract_json_from_zip(zip_source, output_path):
     """
-    Finds all zip files within a source directory and unzips them to a given 
-    output directory.
+    Recursively finds all zip files within a source directory and un-zips them to 
+    a given output directory.
 
     :param zip_source: A directory containing zip files.
     :param output_path: The directory to extract the zip contents in to.

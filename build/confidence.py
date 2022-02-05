@@ -7,13 +7,14 @@ from difflib import SequenceMatcher
 
 def extract_text_from_json(schema_source, output_path):
     """
-    This function walks through a given directory finding all JSON files. Then 
-    it extracts the JSON into a dictionary and creates an output text filepath.
+    Recursively finds all JSON files within a given source directory before 
+    individually extracting the JSON files content into a dictionary.
     
-    It then calls the sub function "_iterate_through_nested_dicts()" on every 
-    dictionary individually passing it the text filepath as the output file.
+    The sub function "_iterate_through_nested_dicts()" is called on every 
+    dictionary individually passing it a constructed filepath as the output file.
 
     :param schema_source: A directory containing JSON files.
+    :param output_path: Location to create output files.
     """
     # Targets "Text" entries from the Json Schema and adds them to a file.
     json_file_list = Path(schema_source).rglob("*.json")
@@ -29,12 +30,11 @@ def extract_text_from_json(schema_source, output_path):
 
 def _iterate_through_nested_dicts(nested_dict, output_file):
     """
-    Iterates through a dictionary targeting certain keys and values which are 
-    written to an output file, it also checks if the values contain nested lists 
-    or dictionaries, if they do it recursively calls this function on them.
+    Recursively iterates through a dictionary and targets all "Text" keys and 
+    their values to write to an output file.
 
-    This sub function is called on the extracted JSON files which are found by 
-    the function "extract_text_from_json()".
+    This sub function is called on the JSON files which are found by the function 
+    "extract_text_from_json()".
 
     :param nested_dict: A JSON dictionary.
     :param output_file: File to output targeted values to.
@@ -57,8 +57,8 @@ def _iterate_through_nested_dicts(nested_dict, output_file):
 
 def convert_pdf_to_image(input_path, output_path, format):
     """
-    Finds all PDF files within a directory and converts each page of each PDF to 
-    an image using pdf2image. 
+    Recursively finds all PDF files within a given directory and converts each 
+    page of each PDF to an image using pdf2image. 
     
     The "convert_from_path()" parameter "thread_count" sets how many threads to 
     use for the conversion. The amount of threads used is never more than the 
@@ -66,7 +66,7 @@ def convert_pdf_to_image(input_path, output_path, format):
 
     :param input_path: Directory containing PDF files.
     :param output_path: Directory to output the converted images to.
-    :param format: Format of the converted image.
+    :param format: File type to use for the conversion without the leading dot.
     """
     pdf_file_list = Path(input_path).rglob("*.pdf")
     for pdf_file in pdf_file_list:
@@ -77,12 +77,12 @@ def convert_pdf_to_image(input_path, output_path, format):
 
 def ocr_converted_pdf_images(input_path, output_path, format):
     """
-    Find all the converted images from the function "convert_pdf_to_image()" and 
-    process with pytesseract and Tesseract OCR to create a text file with the 
-    found content.
+    Recursively finds all images of the given format and performs OCR on them to 
+    create a text file containing the infomation that was found.
 
-    :param input_path: Directory containing directories of images created with the function "convert_pdf_to_image()".
-    :param output_path: Text file to write the OCR content to.
+    :param input_path: Directory containing images.
+    :param output_path: Directory to write the OCR content to.
+    :param format: File type to use for the conversion without the leading dot
     """
     input_path = Path(input_path)
     output_path = Path(output_path)
@@ -97,19 +97,20 @@ def ocr_converted_pdf_images(input_path, output_path, format):
 
 def confidence_check_text(input_path):
     """
-    Walks through all directories in the given input path and finds two 
-    pre-determined files to be used for a very basic confidence check.
+    Recursively finds two pre-determined text files to be used for a very basic 
+    confidence check.
 
     The confidence check uses the difflib sequence matcher to compares two files 
     created with the "_iterate_through_nested_dicts()" and 
     "ocr_converted_pdf_images()" functions before returning a score.
 
-    The comparison is done both ways on the two files to create two different 
-    scores which are then used to create an average confidence score for the 
-    file. The scores for all files are added to a dictionary which is then 
-    printed to the console to display the results.
+    The comparison is done both ways and then in reverse on the two files to 
+    create four different ratios which are then used to create an average 
+    confidence ratio for the file. The scores for all files are added to an 
+    output file as well as a dictionary which is then printed to the console to 
+    display the results.
 
-    :param input_path: Directory containing other directories which contain the JSON Schema and extracted/OCR text files.
+    :param input_path: Directory which contains the extracted/OCR text files.
     """
     input_path = Path(input_path)
     final_score_dict = dict()
