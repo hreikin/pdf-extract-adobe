@@ -20,7 +20,7 @@ confidence.extract_text_from_json(schema_source, output_path)
 
 # Convert PDF files to images for OCR/accuracy check.
 pdf_path = "../test/pdfs/"
-image_path = "../test/confidence-check/"
+image_path = "../test/confidence-check/converted-images/"
 image_format = "png"
 print("Converting PDF files to images for OCR/accuracy check.")
 confidence.convert_pdf_to_image(pdf_path, image_path, image_format)

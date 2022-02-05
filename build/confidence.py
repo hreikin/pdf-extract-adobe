@@ -71,7 +71,7 @@ def convert_pdf_to_image(input_path, output_path, format):
     pdf_file_list = Path(input_path).rglob("*.pdf")
     for pdf_file in pdf_file_list:
         image_name = pdf_file.stem + "_page_"
-        images_path = output_path + pdf_file.parent.name
+        images_path = output_path + pdf_file.stem
         Path(images_path).mkdir(parents=True, exist_ok=True)
         convert_from_path(pdf_file, output_folder=images_path, output_file=image_name, thread_count=8, fmt=format)
 
