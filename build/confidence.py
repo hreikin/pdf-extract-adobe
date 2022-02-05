@@ -5,7 +5,7 @@ from PIL import Image
 from pdf2image import convert_from_path
 from difflib import SequenceMatcher
 
-def extract_text_from_json(schema_source):
+def extract_text_from_json(schema_source, output_path):
     """
     This function walks through a given directory finding all JSON files. Then 
     it extracts the JSON into a dictionary and creates an output text filepath.
@@ -17,8 +17,12 @@ def extract_text_from_json(schema_source):
     """
     # Targets "Text" entries from the Json Schema and adds them to a file.
     json_file_list = Path(schema_source).rglob("*.json")
+    output_path = Path(output_path)
+    output_path.mkdir(parents=True, exist_ok=True)
     for json_file in json_file_list:
-        txt_output = json_file.with_suffix(".txt")
+        txt_output_dir = output_path / json_file.parent.name
+        txt_output_dir.mkdir(parents=True, exist_ok=True)
+        txt_output = txt_output_dir / json_file.name.replace(".json", ".txt")
         with json_file.open() as stream:
             extracted_json = json.loads(stream.read())
         _iterate_through_nested_dicts(extracted_json, txt_output)
@@ -67,7 +71,7 @@ def convert_pdf_to_image(input_path, output_path, format):
     pdf_file_list = Path(input_path).rglob("*.pdf")
     for pdf_file in pdf_file_list:
         image_name = pdf_file.stem + "_page_"
-        images_path = output_path + pdf_file.stem
+        images_path = output_path + pdf_file.parent.name
         Path(images_path).mkdir(parents=True, exist_ok=True)
         convert_from_path(pdf_file, output_folder=images_path, output_file=image_name, thread_count=8, fmt=format)
 
@@ -110,7 +114,7 @@ def confidence_check_text(input_path):
     input_path = Path(input_path)
     final_score_dict = dict()
     for directory in input_path.iterdir():
-        if directory.is_dir():
+        if directory.is_dir() and directory.name.endswith("-Extracted-Json-Schema"):
             txt_file_list = sorted(directory.rglob("*.txt"))
             ocr_txt_file = txt_file_list[0]
             json_txt_file = txt_file_list[-1]
@@ -141,7 +145,7 @@ def confidence_check_text(input_path):
         print(f"{pdf}".ljust(50))
         for key, value in scores.items():
                 print(f"{key}:".ljust(50) + f"{round(value, 2)}".rjust(30))
-    output_file = "../test/confidence-score.txt"
+    output_file = "../test/confidence-check/all-confidence-scores.txt"
     with open(output_file, "w") as stream:
         stream.write(f"PDF".ljust(50) + f"Score\n".rjust(30))
         for pdf, scores in final_score_dict.items():
@@ -150,8 +154,11 @@ def confidence_check_text(input_path):
             for key, value in scores.items():
                 stream.write(f"{key}:".ljust(50) + f"\t{round(value, 2)}\n".rjust(30))
 
-
-
+# These functions work as intended but dont provide sufficient results. If the 
+# targeted images can be refined they could be useful for another confidence 
+# check which compares images. They will need converting to pathlib if they are 
+# to be used.
+#
 # def extract_images_from_pdf(input_path, output_path):
 #     for root, dirnames, filenames in os.walk(input_path):
 #         for filename in filenames:
