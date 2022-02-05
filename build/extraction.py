@@ -1,4 +1,4 @@
-import logging, zipfile, os
+import logging, zipfile
 
 from pathlib import Path
 
@@ -13,9 +13,6 @@ from adobe.pdfservices.operation.pdfops.extract_pdf_operation import ExtractPDFO
 from adobe.pdfservices.operation.pdfops.options.extractpdf.extract_renditions_element_type import ExtractRenditionsElementType
 from adobe.pdfservices.operation.pdfops.options.extractpdf.table_structure_type import TableStructureType
 
-# Logging for the adobe API
-logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
-
 def extract_pdf_adobe(source_path):
     """
     This function recursively finds all PDF files within a given directory and 
@@ -24,6 +21,8 @@ def extract_pdf_adobe(source_path):
     :param source_path: A directory containing PDF files.
     """
     pdf_file_list = sorted(Path(source_path).rglob("*.pdf"))
+    pdf_amount = len(pdf_file_list)
+    logging.info(f"Found {pdf_amount} PDF files, creating individual API requests.")
     for pdf in pdf_file_list:
         _extract_all_from_pdf(pdf)
 
@@ -69,8 +68,9 @@ def _extract_all_from_pdf(source_file):
         # Save the result to the specified location.
         result.save_as(base_path / f"test/json-zips/{pdf_name}-Extracted-Json-Schema.zip")
     except (ServiceApiException, ServiceUsageException, SdkException):
-        logging.exception("Exception encountered while executing operation")
-
+        logging.exception(f"Exception encountered while executing operation on '{source_file}'.")
+        logging.info(f"Retrying operation on '{source_file}'.")
+        _extract_all_from_pdf(source_file)
 
 def extract_json_from_zip(zip_source, output_path):
     """
@@ -83,7 +83,10 @@ def extract_json_from_zip(zip_source, output_path):
     # Extracts Json Schema from zip file.
     Path(output_path).mkdir(parents=True, exist_ok=True)
     zip_file_list = sorted(Path(zip_source).rglob("*.zip"))
+    zip_amount = len(zip_file_list)
+    logging.info(f"Found {zip_amount} zip files, extracting to '{Path(output_path).resolve()}'.")
     for zip_file in zip_file_list:
         dir_name = zip_file.stem
         with zipfile.ZipFile(zip_file) as item:
             item.extractall(output_path + "/" + dir_name)
+        logging.debug(f"Extracted '{Path(zip_file).resolve()}'.")

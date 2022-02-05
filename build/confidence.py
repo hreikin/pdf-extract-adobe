@@ -1,4 +1,4 @@
-import json, pytesseract, fitz, os
+import json, pytesseract, logging
 
 from pathlib import Path
 from PIL import Image
@@ -26,6 +26,8 @@ def extract_text_from_json(schema_source, output_path):
         txt_output = txt_output_dir / json_file.name.replace(".json", ".txt")
         with json_file.open() as stream:
             extracted_json = json.loads(stream.read())
+        logging.debug(f"Targeting 'Text' elements within '{json_file.resolve()}'.")
+        logging.debug(f"Creating text output file at '{txt_output.resolve()}'.")
         _iterate_through_nested_dicts(extracted_json, txt_output)
 
 def _iterate_through_nested_dicts(nested_dict, output_file):
@@ -52,6 +54,7 @@ def _iterate_through_nested_dicts(nested_dict, output_file):
                             _iterate_through_nested_dicts(item, output_file)
         else:
             if key == "Text":
+                logging.debug(f"Found '{key}' element: '{value}'")
                 with open(output_file, "a") as stream:
                     stream.write(value + "\n")
 
@@ -73,6 +76,8 @@ def convert_pdf_to_image(input_path, output_path, format):
         image_name = pdf_file.stem + "_page_"
         images_path = output_path + pdf_file.stem
         Path(images_path).mkdir(parents=True, exist_ok=True)
+        logging.debug(f"Converting '{pdf_file.resolve()}'.")
+        logging.debug(f"Image created at '{Path(image_name).resolve()}'.")
         convert_from_path(pdf_file, output_folder=images_path, output_file=image_name, thread_count=8, fmt=format)
 
 def ocr_converted_pdf_images(input_path, output_path, format):
@@ -91,6 +96,8 @@ def ocr_converted_pdf_images(input_path, output_path, format):
         for item in images_file_list:
             split_name = item.name.split("_page_")
             txt_file_path = f"{output_path}/{split_name[0]}-Extracted-Json-Schema/{split_name[0]}-OCR.txt"
+            logging.debug(f"Performing OCR on '{item.resolve()}'.")
+            logging.debug(f"Creating text output file at '{Path(txt_file_path).resolve()}'.")
             ocr_string = pytesseract.image_to_string(Image.open(item))
             with open(txt_file_path, "a") as stream:
                 stream.write(ocr_string)
@@ -120,6 +127,7 @@ def confidence_check_text(input_path):
             txt_file_list = sorted(directory.rglob("*.txt"))
             ocr_txt_file = txt_file_list[0]
             json_txt_file = txt_file_list[-1]
+            logging.debug(f"Comparing '{ocr_txt_file.resolve()}' with '{json_txt_file.resolve()}'")
             with open(ocr_txt_file) as stream:
                 ocr_list = stream.readlines()
             with open(json_txt_file) as stream:
@@ -151,6 +159,11 @@ def confidence_check_text(input_path):
             comparison_ratio = (score_a.ratio() + score_b.ratio() + score_c.ratio() + score_d.ratio()) / 4
             close_match_average_ratio = (close_match_ratio_a + close_match_ratio_b) / 2
             total_average_ratio = (comparison_ratio + close_match_average_ratio) / 2
+            logging.debug(f"Close Match Ratio A: '{close_match_ratio_a}'")
+            logging.debug(f"Close Match Ratio B: '{close_match_ratio_b}'")
+            logging.debug(f"Close Match Average Ratio: '{close_match_average_ratio}'")
+            logging.debug(f"Comparison Ratio: '{comparison_ratio}'")
+            logging.debug(f"Total Average Ratio: '{total_average_ratio}'")
             final_score_dict[directory.name.replace('-Extracted-Json-Schema', '')] = {
                 "Comparison A Ratio" : score_a.ratio(),
                 "Comparison B Ratio" : score_b.ratio(),
@@ -162,58 +175,11 @@ def confidence_check_text(input_path):
                 "Close Match Average Ratio" : close_match_average_ratio,
                 "Total Average Ratio" : total_average_ratio,
             }
-    print_keys = [
-        "Comparison Average Ratio",
-        "Close Match Average Ratio",
-        "Total Average Ratio",
-        ]
-    print("\nPDF FILE".ljust(50) + "SCORE".rjust(18))
-    for pdf, scores in final_score_dict.items():
-        print(f"{pdf}:".ljust(50))
-        for key, value in scores.items():
-            for keys in print_keys:
-                if key == keys:
-                    print(f"\t{key}".ljust(50) + f"{round(value, 1)}".rjust(10))
     output_file = "../test/confidence-check/all-confidence-scores.txt"
+    logging.debug(f"Creating text output file with results '{Path(output_file).resolve()}'.")
     with open(output_file, "w") as stream:
         stream.write(f"PDF".ljust(50) + f"Score".rjust(30))
         for pdf, scores in final_score_dict.items():
-            # stream.write("\n")
             stream.write(f"\n{pdf}\n")
             for key, value in scores.items():
-                stream.write(f"\t{key}:".ljust(50) + f"{round(value, 10)}\n".rjust(30))
-
-# These functions work as intended but dont provide sufficient results. If the 
-# targeted images can be refined they could be useful for another confidence 
-# check which compares images. They will need converting to pathlib if they are 
-# to be used.
-#
-# def extract_images_from_pdf(input_path, output_path):
-#     for root, dirnames, filenames in os.walk(input_path):
-#         for filename in filenames:
-#             doc = fitz.open(f"{input_path}/{filename}")
-#             dir_name = filename.rstrip(".pdf")
-#             dir_path = output_path + "/" + dir_name
-#             if not os.path.isdir(dir_path):
-#                 os.makedirs(dir_path, exist_ok=True)
-#             for i in range(len(doc)):
-#                 for img in doc.get_page_images(i):
-#                     xref = img[0]
-#                     pix = fitz.Pixmap(doc, xref)
-#                     if pix.n - pix.alpha < 4:       # this is GRAY or RGB
-#                         pix.save(f"{dir_path}/p{i}-{xref}.png")
-#                     else:               # CMYK: convert to RGB first
-#                         pix1 = fitz.Pixmap(fitz.csRGB, pix)
-#                         pix1.save(f"{dir_path}/p{i}-{xref}.png")
-#                         pix1 = None
-#                     pix = None
-#
-# def extract_images_from_pdf(input_path, output_path):
-#     for root, dirnames, filenames in os.walk(input_path):
-#         for filename in filenames:
-#             dir_name = filename.rstrip(".pdf")
-#             dir_path = output_path + "/" + dir_name
-#             image_name = "extracted-image"
-#             if not os.path.isdir(dir_path):
-#                 os.makedirs(dir_path, exist_ok=True)
-#             os.system(f"pdfimages -png {input_path}/{filename} {dir_path}/{image_name}")
+                stream.write(f"---- {key}:".ljust(50) + f"{round(value, 1)}\n".rjust(30))
