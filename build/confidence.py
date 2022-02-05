@@ -100,15 +100,16 @@ def confidence_check_text(input_path):
     Recursively finds two pre-determined text files to be used for a very basic 
     confidence check.
 
-    The confidence check uses the difflib sequence matcher to compares two files 
-    created with the "_iterate_through_nested_dicts()" and 
-    "ocr_converted_pdf_images()" functions before returning a score.
+    The confidence check uses the difflib "SequenceMatcher" class and 
+    "get_close_matches()" method to compare two files created with the 
+    "_iterate_through_nested_dicts()" and "ocr_converted_pdf_images()" functions 
+    before returning a ratio. All ratios and averages are stored to a dictionary 
+    and text file.
 
-    The comparison is done both ways and then in reverse on the two files to 
-    create four different ratios which are then used to create an average 
-    confidence ratio for the file. The scores for all files are added to an 
-    output file as well as a dictionary which is then printed to the console to 
-    display the results.
+    The Python docs state that "ratio()" returns a float in [0, 1], measuring 
+    the similarity of the sequences. As a rule of thumb, a "ratio()" value over 
+    0.6 means the sequences are close matches. The same value of 0.6 is used as 
+    the cut-off for the "get_close_matches()" method.
 
     :param input_path: Directory which contains the extracted/OCR text files.
     """
@@ -119,10 +120,6 @@ def confidence_check_text(input_path):
             txt_file_list = sorted(directory.rglob("*.txt"))
             ocr_txt_file = txt_file_list[0]
             json_txt_file = txt_file_list[-1]
-            with open(ocr_txt_file) as stream:
-                ocr_string = stream.read()
-            with open(json_txt_file) as stream:
-                json_string = stream.read()
             with open(ocr_txt_file) as stream:
                 ocr_list = stream.readlines()
             with open(json_txt_file) as stream:
@@ -141,18 +138,18 @@ def confidence_check_text(input_path):
                     close_matches_b += 1
                 matches_list = []
             close_match_ratio_b = close_matches_b / len(json_list)
-            close_match_average_ratio = (close_match_ratio_a + close_match_ratio_b) / 2
+            with open(ocr_txt_file) as stream:
+                ocr_string = stream.read()
+            with open(json_txt_file) as stream:
+                json_string = stream.read()
             reverse_ocr_string = ocr_string[::-1]
             reverse_json_string = json_string[::-1]
-            ####################################################################
-            # The Python docs state that "ratio()" returns a float in [0, 1], 
-            # measuring the similarity of the sequences. As a rule of thumb, a 
-            # "ratio()" value over 0.6 means the sequences are close matches.
             score_a = SequenceMatcher(None, json_string, ocr_string)
             score_b = SequenceMatcher(None, ocr_string, json_string)
             score_c = SequenceMatcher(None, reverse_json_string, reverse_ocr_string)
             score_d = SequenceMatcher(None, reverse_ocr_string, reverse_json_string)
             comparison_ratio = (score_a.ratio() + score_b.ratio() + score_c.ratio() + score_d.ratio()) / 4
+            close_match_average_ratio = (close_match_ratio_a + close_match_ratio_b) / 2
             total_average_ratio = (comparison_ratio + close_match_average_ratio) / 2
             final_score_dict[directory.name.replace('-Extracted-Json-Schema', '')] = {
                 "Comparison A Ratio" : score_a.ratio(),
