@@ -5,7 +5,7 @@ from PIL import Image
 from pdf2image import convert_from_path
 from difflib import SequenceMatcher, get_close_matches
 
-def extract_text_from_json(schema_source, output_path):
+def target_element_in_json(schema_source, output_path, target_element):
     """
     Recursively finds all JSON files within a given source directory before 
     individually extracting the JSON files content into a dictionary.
@@ -28,9 +28,9 @@ def extract_text_from_json(schema_source, output_path):
             extracted_json = json.loads(stream.read())
         logging.debug(f"Targeting 'Text' elements within '{json_file.resolve()}'.")
         logging.debug(f"Creating text output file at '{txt_output.resolve()}'.")
-        _iterate_through_nested_dicts(extracted_json, txt_output)
+        _iterate_through_nested_dicts(extracted_json, txt_output, target_element)
 
-def _iterate_through_nested_dicts(nested_dict, output_file):
+def _iterate_through_nested_dicts(nested_dict, output_file, target_element):
     """
     Recursively iterates through a dictionary and targets all "Text" keys and 
     their values to write to an output file.
@@ -43,17 +43,17 @@ def _iterate_through_nested_dicts(nested_dict, output_file):
     """
     for key,value in nested_dict.items():
         if isinstance(value, dict):
-            _iterate_through_nested_dicts(value, output_file)
+            _iterate_through_nested_dicts(value, output_file, target_element)
         elif isinstance(value, list):
             for item in value:
                 if isinstance(item, dict):
-                    _iterate_through_nested_dicts(item, output_file)
+                    _iterate_through_nested_dicts(item, output_file, target_element)
                 elif isinstance(value, list):
                     for item in value:
                         if isinstance(item, dict):
-                            _iterate_through_nested_dicts(item, output_file)
+                            _iterate_through_nested_dicts(item, output_file, target_element)
         else:
-            if key == "Text":
+            if key == target_element:
                 logging.debug(f"Found '{key}' element: '{value}'")
                 with open(output_file, "a") as stream:
                     stream.write(value + "\n")

@@ -1,5 +1,4 @@
 import logging
-from re import T
 
 from PyPDF2 import PdfFileWriter, PdfFileReader, PdfFileMerger
 from pathlib import Path
