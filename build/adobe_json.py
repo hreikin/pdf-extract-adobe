@@ -71,7 +71,7 @@ def _create_adobe_request(source_file):
         # Execute the operation.
         result: FileRef = extract_pdf_operation.execute(execution_context)
         # Save the result to the specified location.
-        result.save_as(base_path / f"test/json-zips/{pdf_name}-Extracted-Json-Schema.zip")
+        result.save_as(base_path / f"test/json-zips/{pdf_name}.zip")
     except (ServiceApiException, ServiceUsageException, SdkException):
         logging.exception(f"Exception encountered while executing operation on '{source_file}'.")
         logging.info(f"Retrying operation on '{source_file}'.")

@@ -24,7 +24,7 @@ def confidence_check_text(input_path):
     input_path = Path(input_path)
     final_score_dict = dict()
     for directory in input_path.iterdir():
-        if directory.is_dir() and directory.name.endswith("-Extracted-Json-Schema"):
+        if directory.is_dir():
             txt_file_list = sorted(directory.rglob("*.txt"))
             ocr_txt_file = txt_file_list[0]
             json_txt_file = txt_file_list[-1]
@@ -76,7 +76,7 @@ def confidence_check_text(input_path):
                 "Close Match Average Ratio" : close_match_average_ratio,
                 "Total Average Ratio" : total_average_ratio,
             }
-    output_file = "../test/confidence-check/all-confidence-scores.txt"
+    output_file = "../test/all-confidence-scores.txt"
     logging.debug(f"Creating text output file with results '{Path(output_file).resolve()}'.")
     with open(output_file, "w") as stream:
         stream.write(f"PDF".ljust(50) + f"Score".rjust(30))

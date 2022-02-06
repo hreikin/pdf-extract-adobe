@@ -94,7 +94,7 @@ def ocr_images_for_text(input_path, output_path, format):
         images_file_list = sorted(Path(directory).rglob(f"*.{format}"))
         for item in images_file_list:
             split_name = item.name.split("_page_")
-            txt_file_path = f"{output_path}/{split_name[0]}-Extracted-Json-Schema/{split_name[0]}-OCR.txt"
+            txt_file_path = f"{output_path}/{split_name[0]}/{split_name[0]}-OCR.txt"
             logging.debug(f"Performing OCR on '{item.resolve()}'.")
             logging.debug(f"Creating text output file at '{Path(txt_file_path).resolve()}'.")
             ocr_string = pytesseract.image_to_string(Image.open(item))

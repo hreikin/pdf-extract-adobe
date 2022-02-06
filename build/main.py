@@ -36,38 +36,38 @@ adobe_json.extract_pdf_adobe(source_path)
 # logging.info("Extracting JSON Schema from zip files.")
 # utilities.extract_from_zip(zip_source)
 
-# # Targets "Text" entries from the Json Schema and adds them to a file for each pdf.
-# schema_source = "../test/json-schema/"
-# output_path = "../test/confidence-check/"
-# target_element = "Text"
-# logging.info("Targeting 'Text' entries from the JSON Schema.")
-# extraction.target_element_in_json(schema_source, output_path, target_element)
+# Targets "Text" entries from the Json Schema and adds them to a file for each pdf.
+schema_source = "../test/json-schema/"
+output_path = "../test/extracted-content/"
+target_element = "Text"
+logging.info("Targeting 'Text' entries from the JSON Schema.")
+extraction.target_element_in_json(schema_source, output_path, target_element)
 
-# # Convert PDF files to images for OCR/accuracy check.
-# pdf_path = "../test/pdfs/"
-# image_path = "../test/confidence-check/converted-images/"
-# image_format = "png"
-# logging.info("Converting PDF files to images.")
-# extraction.split_all_pages_image(pdf_path, image_path, image_format)
+# Convert PDF files to images for OCR/accuracy check.
+pdf_path = "../test/pdfs/"
+image_path = "../test/extracted-content/"
+image_format = "png"
+logging.info("Converting PDF files to images.")
+extraction.split_all_pages_into_image(pdf_path, image_path, image_format)
 
-# # Run the converted pdf images through OCR and create a text file for each one as output.
-# input_path = "../test/confidence-check/"
-# output_path = "../test/confidence-check/"
-# image_format = "png"
-# logging.info("Running the converted images through OCR.")
-# extraction.ocr_images(input_path, output_path, image_format)
+# Run the converted pdf images through OCR and create a text file for each one as output.
+input_path = "../test/extracted-content/"
+output_path = "../test/extracted-content/"
+image_format = "png"
+logging.info("Running the converted images through OCR.")
+extraction.ocr_images_for_text(input_path, output_path, image_format)
 
-# # Confidence Check
-# input_path = "../test/confidence-check/"
-# logging.info("Performing basic confidence check.")
-# confidence.confidence_check_text(input_path)
-# logging.info("Process complete, exiting.")
+# Confidence Check
+input_path = "../test/extracted-content/"
+logging.info("Performing basic confidence check.")
+confidence.confidence_check_text(input_path)
+logging.info("Process complete, exiting.")
 
-# # Split all PDF pages
-# pdf_file = "../test/pdfs/Daresbury_labs_CS.1.pdf"
-# processing.split_all_pages_pdf(pdf_file)
+# Split all PDF pages
+pdf_file = "../test/pdfs/Daresbury_labs_CS.1.pdf"
+processing.split_all_pages_pdf(pdf_file)
 
-# # Merge two PDF files.
-# file_one = "../test/pdfs/Daresbury_labs_CS.1.pdf"
-# file_two = "../test/pdfs/Sputtering-Targets.pdf"
-# processing.append_pdf(file_one, file_two)
+# Merge two PDF files.
+file_one = "../test/pdfs/Daresbury_labs_CS.1.pdf"
+file_two = "../test/pdfs/Sputtering-Targets.pdf"
+processing.append_pdf(file_one, file_two)
