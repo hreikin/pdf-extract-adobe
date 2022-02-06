@@ -41,3 +41,18 @@ def append_pdf(input_one, input_two):
     merger.write(merged_file)
     logging.info(f"Success, merged file available at '{output_path}'.")
 
+def overlay(input_file, overlay_file):
+    input_file = Path(input_file).resolve()
+    output_dir = Path("../test/processing/overlay/")
+    output_file = output_dir.resolve() / f"{input_file.stem}-OVERLAY.pdf"
+    Path(output_dir).mkdir(parents=True, exist_ok=True)
+    overlay = PdfFileReader(overlay_file)
+    overlay_page = overlay.getPage(0)
+    pdf = PdfFileReader(str(input_file))
+    pdf_writer = PdfFileWriter()
+    for page in range(pdf.getNumPages()):
+        pdf_page = pdf.getPage(page)
+        pdf_page.mergePage(overlay_page)
+        pdf_writer.addPage(pdf_page)
+    with open(output_file, 'wb') as stream:
+        pdf_writer.write(stream)

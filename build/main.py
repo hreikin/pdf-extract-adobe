@@ -80,3 +80,8 @@ processing.split_all_pages_pdf(pdf_file)
 file_one = "../test/pdfs/Daresbury_labs_CS.1.pdf"
 file_two = "../test/pdfs/Sputtering-Targets.pdf"
 processing.append_pdf(file_one, file_two)
+
+# Overlay PDF with another.
+file_one = "../test/pdfs/Daresbury_labs_CS.1.pdf"
+file_two = "../test/pdfs/Sputtering-Targets.pdf"
+processing.overlay(file_one, file_two)
