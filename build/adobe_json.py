@@ -1,4 +1,6 @@
-import logging, zipfile
+import utilities
+
+import logging
 
 from pathlib import Path
 
@@ -20,11 +22,13 @@ def extract_pdf_adobe(source_path):
 
     :param source_path: A directory containing PDF files.
     """
+    zip_path = Path(source_path).with_stem("json-zips")
     pdf_file_list = sorted(Path(source_path).rglob("*.pdf"))
     pdf_amount = len(pdf_file_list)
     logging.info(f"Found {pdf_amount} PDF files, creating individual API requests.")
     for pdf in pdf_file_list:
         _create_adobe_request(pdf)
+    utilities.extract_from_zip(zip_path)
 
 def _create_adobe_request(source_file):
     """
@@ -71,22 +75,3 @@ def _create_adobe_request(source_file):
         logging.exception(f"Exception encountered while executing operation on '{source_file}'.")
         logging.info(f"Retrying operation on '{source_file}'.")
         _create_adobe_request(source_file)
-
-def extract_from_zip(zip_source, output_path):
-    """
-    Recursively finds all zip files within a source directory and un-zips them to 
-    a given output directory.
-
-    :param zip_source: A directory containing zip files.
-    :param output_path: The directory to extract the zip contents in to.
-    """
-    # Extracts Json Schema from zip file.
-    Path(output_path).mkdir(parents=True, exist_ok=True)
-    zip_file_list = sorted(Path(zip_source).rglob("*.zip"))
-    zip_amount = len(zip_file_list)
-    logging.info(f"Found {zip_amount} zip files, extracting to '{Path(output_path).resolve()}'.")
-    for zip_file in zip_file_list:
-        dir_name = zip_file.stem
-        with zipfile.ZipFile(zip_file) as item:
-            item.extractall(output_path + "/" + dir_name)
-        logging.debug(f"Extracted '{Path(zip_file).resolve()}'.")
