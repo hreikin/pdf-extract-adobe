@@ -68,10 +68,6 @@ extraction.extract_text_from_pdf(pdf_path)
 pdf_path = "../test/pdfs/"
 extraction.extract_images_from_pdf(pdf_path)
 
-# # Extract tables from PDF - NOT WORKING
-# pdf_path = "../test/pdfs/"
-# extraction.extract_tables_from_pdf(pdf_path)
-
 # Split all PDF pages
 pdf_file = "../test/pdfs/Daresbury_labs_CS.1.pdf"
 processing.split_all_pages_pdf(pdf_file)
@@ -85,3 +81,7 @@ processing.append_pdf(file_one, file_two)
 file_one = "../test/pdfs/Daresbury_labs_CS.1.pdf"
 file_two = "../test/pdfs/Sputtering-Targets.pdf"
 processing.overlay(file_one, file_two)
+
+# Extract tables from PDF
+pdf_path = "../test/pdfs/Sputtering-Targets.pdf"
+extraction.extract_tables_from_pdf(pdf_path)

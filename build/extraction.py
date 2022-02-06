@@ -1,4 +1,7 @@
-import logging, json, pytesseract, fitz, camelot, tabula
+from __future__ import print_function
+import logging, json, pytesseract, fitz
+
+from ParseTab import ParseTab
 
 from pathlib import Path
 from PIL import Image
@@ -144,11 +147,70 @@ def extract_images_from_pdf(input_path):
                     pix1.save(f"{image_dir}/p{page}-{xref}.png")
                     pix1 = None
                 pix = None
-# # This currently doesnt work with either tabula or camelot, unsure if 
-# # something is installed incorrectly or its just broken.
-# def extract_tables_from_pdf(input_path):
-#     input_path = Path(input_path)
-#     pdf_file_list = sorted(Path(input_path).rglob(f"*.pdf"))
-#     for pdf in pdf_file_list:
-#         tables = tabula.read_pdf(pdf)
-#         tables.export(f"{pdf.stem}-ALL-TABLES.csv", f="csv")
+
+def extract_tables_from_pdf(input_pdf):
+    """
+    Created on Mon Apr 05 07:00:00 2016
+    @author: Jorj McKie
+    Copyright (c) 2015 Jorj X. McKie
+    The license of this program is governed by the GNU GENERAL PUBLIC LICENSE
+    Version 3, 29 June 2007. See the "COPYING" file of this repository.
+    This is an example for using the Python binding PyMuPDF for MuPDF.
+    The ParseTab function parses tables contained in a page of a PDF
+    (or OpenXPS, EPUB) file and passes back a list of lists of strings
+    that represents the original table in matrix form.
+    Dependencies:
+    PyMuPDF
+    """
+    #==============================================================================
+    # Main program
+    #==============================================================================
+    ''' This is just a stub to illustrate the functioning of ParseTab.
+    After reading a page, we
+    (1) search the strings that encapsulate our table
+    (2) from coordinates of those string occurences, we define the surrounding
+        rectangle. We use zero or large numbers to specify "no limit".
+    (3) call ParseTab to get the parsed table
+    '''
+    input_pdf = Path(input_pdf)
+    doc = fitz.Document(input_pdf.resolve())
+    pno = 0
+    page = doc.load_page(pno)
+
+    #==============================================================================
+    # search for top of table
+    #==============================================================================
+    table_title = "Metals "
+    search1 = page.search_for(table_title, hit_max = 1)
+    if not search1:
+        raise ValueError("table top delimiter not found")
+    rect1 = search1[0]  # the rectangle that surrounds the search string
+    ymin = rect1.y1     # table starts below this value
+
+    #==============================================================================
+    # search for bottom of table
+    #==============================================================================
+    search2 = page.search_for("nothing ", hit_max = 1)
+    if not search2:
+        print("warning: table bottom delimiter not found - using end of page")
+        ymax = 99999
+    else:
+        rect2 = search2[0]  # the rectangle that surrounds the search string
+        ymax = rect2.y0     # table ends above this value
+
+    if not ymin < ymax:     # something was wrong with the search strings
+        raise ValueError("table bottom delimiter higher than top")
+
+    #==============================================================================
+    # now get the table
+    #==============================================================================
+    tab = ParseTab(page, [0, ymin, 9999, ymax])
+
+    #print(table_title)
+    #for t in tab:
+    #    print(t)
+    csv = open(input_pdf.with_name("p%s.csv" % (pno+1,)), "w")
+    csv.write(table_title + "\n")
+    for t in tab:
+        csv.write(",".join(t) + "\n")
+    csv.close()
