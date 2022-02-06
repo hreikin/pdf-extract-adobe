@@ -1,4 +1,4 @@
-import logging, json, pytesseract, fitz
+import logging, json, pytesseract, fitz, camelot, tabula
 
 from pathlib import Path
 from PIL import Image
@@ -94,17 +94,19 @@ def ocr_images_for_text(input_path, format):
     """
     input_path = Path(input_path)
     for directory in input_path.iterdir():
-        images_file_list = sorted(Path(directory).rglob(f"*{format}"))
-        for item in images_file_list:
-            split_name = item.name.split("_page_")
-            txt_file_dir = f"{input_path}/{split_name[0]}"
-            txt_file_path = f"{txt_file_dir}/{split_name[0]}-IMAGE-OCR.txt"
-            Path(txt_file_dir).mkdir(parents=True, exist_ok=True)
-            logging.debug(f"Performing OCR on '{item.resolve()}'.")
-            logging.debug(f"Creating text output file at '{Path(txt_file_path).resolve()}'.")
-            ocr_string = pytesseract.image_to_string(Image.open(item))
-            with open(txt_file_path, "a") as stream:
-                stream.write(ocr_string)
+        for sub_dir in directory.iterdir():
+            if sub_dir.stem == "converted-pages":
+                images_file_list = sorted(Path(directory).rglob(f"*{format}"))
+                for item in images_file_list:
+                    split_name = item.name.split("_page_")
+                    txt_file_dir = f"{input_path}/{split_name[0]}"
+                    txt_file_path = f"{txt_file_dir}/{split_name[0]}-IMAGE-OCR.txt"
+                    Path(txt_file_dir).mkdir(parents=True, exist_ok=True)
+                    logging.debug(f"Performing OCR on '{item.resolve()}'.")
+                    logging.debug(f"Creating text output file at '{Path(txt_file_path).resolve()}'.")
+                    ocr_string = pytesseract.image_to_string(Image.open(item))
+                    with open(txt_file_path, "a") as stream:
+                        stream.write(ocr_string)
 
 def extract_text_from_pdf(input_path):
     input_path = Path(input_path)
@@ -133,10 +135,20 @@ def extract_images_from_pdf(input_path):
             for img in doc.get_page_images(page):
                 xref = img[0]
                 pix = fitz.Pixmap(doc, xref)
-                if pix.n - pix.alpha < 4:       # this is GRAY or RGB
+                if pix.n - pix.alpha < 4:
+                    # this is GRAY or RGB
                     pix.save(f"{image_dir}/p{page}-{xref}.png")
-                else:               # CMYK: convert to RGB first
+                else:
+                    # CMYK: convert to RGB first
                     pix1 = fitz.Pixmap(fitz.csRGB, pix)
                     pix1.save(f"{image_dir}/p{page}-{xref}.png")
                     pix1 = None
                 pix = None
+# # This currently doesnt work with either tabula or camelot, unsure if 
+# # something is installed incorrectly or its just broken.
+# def extract_tables_from_pdf(input_path):
+#     input_path = Path(input_path)
+#     pdf_file_list = sorted(Path(input_path).rglob(f"*.pdf"))
+#     for pdf in pdf_file_list:
+#         tables = tabula.read_pdf(pdf)
+#         tables.export(f"{pdf.stem}-ALL-TABLES.csv", f="csv")

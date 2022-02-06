@@ -2,12 +2,13 @@
 
 ## Install
 - Place `Adobe PDF Extract API` credentials in root of repository.
+- Install `Python Imaging Library` (or the `Pillow fork`) for your OS
 - Install `Tesseract OCR` for your OS.
 
 ```
 python3 -m venv .venv
 source .venv/bin/activate
-pip install scrapy pdfservices-sdk pdf2image pytesseract
+pip install scrapy pdfservices-sdk pytesseract pymupdf
 ```
 
 ## Known Issue & Workaround
