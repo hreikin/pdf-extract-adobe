@@ -2,7 +2,6 @@ import logging, json, pytesseract, fitz
 
 from pathlib import Path
 from PIL import Image
-from pdf2image import convert_from_path
 
 def target_element_in_json(schema_source, target_element):
     """
@@ -77,7 +76,7 @@ def split_all_pages_into_image(input_path, format):
         logging.debug(f"Converting '{pdf_file.resolve()}'.")
         doc = fitz.open(pdf_file)
         image_name = pdf_file.stem + "_page_"
-        images_path = Path(input_path).with_stem("extracted-content") / pdf_file.stem
+        images_path = Path(input_path).with_stem("extracted-content") / pdf_file.stem / "converted-pages"
         Path(images_path).mkdir(parents=True, exist_ok=True)
         logging.debug(f"Image created at '{Path(image_name).resolve()}'.")
         for page in doc:
@@ -98,7 +97,9 @@ def ocr_images_for_text(input_path, format):
         images_file_list = sorted(Path(directory).rglob(f"*{format}"))
         for item in images_file_list:
             split_name = item.name.split("_page_")
-            txt_file_path = f"{input_path}/{split_name[0]}/{split_name[0]}-IMAGE-OCR.txt"
+            txt_file_dir = f"{input_path}/{split_name[0]}"
+            txt_file_path = f"{txt_file_dir}/{split_name[0]}-IMAGE-OCR.txt"
+            Path(txt_file_dir).mkdir(parents=True, exist_ok=True)
             logging.debug(f"Performing OCR on '{item.resolve()}'.")
             logging.debug(f"Creating text output file at '{Path(txt_file_path).resolve()}'.")
             ocr_string = pytesseract.image_to_string(Image.open(item))
@@ -120,3 +121,22 @@ def extract_text_from_pdf(input_path):
                 pdf_text += page.get_text()
         with open(txt_file_path, "a") as stream:
             stream.write(pdf_text)
+
+def extract_images_from_pdf(input_path):
+    input_path = Path(input_path)
+    pdf_file_list = sorted(Path(input_path).rglob(f"*.pdf"))
+    for pdf in pdf_file_list:
+        doc = fitz.open(pdf)
+        image_dir = f"{input_path.with_name('extracted-content')}/{pdf.stem}/extracted-images"
+        Path(image_dir).mkdir(parents=True, exist_ok=True)
+        for page in range(len(doc)):
+            for img in doc.get_page_images(page):
+                xref = img[0]
+                pix = fitz.Pixmap(doc, xref)
+                if pix.n - pix.alpha < 4:       # this is GRAY or RGB
+                    pix.save(f"{image_dir}/p{page}-{xref}.png")
+                else:               # CMYK: convert to RGB first
+                    pix1 = fitz.Pixmap(fitz.csRGB, pix)
+                    pix1.save(f"{image_dir}/p{page}-{xref}.png")
+                    pix1 = None
+                pix = None
