@@ -1,4 +1,4 @@
-import logging, json, pytesseract
+import os, logging, json, pytesseract
 
 from pathlib import Path
 from PIL import Image
@@ -15,7 +15,6 @@ def target_element_in_json(schema_source, output_path, target_element):
     :param schema_source: A directory containing JSON files.
     :param output_path: Location to create output files.
     """
-    # Targets "Text" entries from the Json Schema and adds them to a file.
     json_file_list = Path(schema_source).rglob("*.json")
     output_path = Path(output_path)
     output_path.mkdir(parents=True, exist_ok=True)
@@ -25,7 +24,7 @@ def target_element_in_json(schema_source, output_path, target_element):
         txt_output = txt_output_dir / json_file.name.replace(".json", ".txt")
         with json_file.open() as stream:
             extracted_json = json.loads(stream.read())
-        logging.debug(f"Targeting 'Text' elements within '{json_file.resolve()}'.")
+        logging.debug(f"Targeting '{target_element}' elements within '{json_file.resolve()}'.")
         logging.debug(f"Creating text output file at '{txt_output.resolve()}'.")
         _iterate_through_nested_dicts(extracted_json, txt_output, target_element)
 
@@ -57,7 +56,7 @@ def _iterate_through_nested_dicts(nested_dict, output_file, target_element):
                 with open(output_file, "a") as stream:
                     stream.write(value + "\n")
 
-def split_all_pages_image(input_path, output_path, format):
+def split_all_pages_into_image(input_path, output_path, format):
     """
     Recursively finds all PDF files within a given directory and converts each 
     page of each PDF to an image using pdf2image. 
@@ -70,6 +69,7 @@ def split_all_pages_image(input_path, output_path, format):
     :param output_path: Directory to output the converted images to.
     :param format: File type to use for the conversion without the leading dot.
     """
+    threads = os.cpu_count()
     pdf_file_list = Path(input_path).rglob("*.pdf")
     for pdf_file in pdf_file_list:
         image_name = pdf_file.stem + "_page_"
@@ -77,9 +77,9 @@ def split_all_pages_image(input_path, output_path, format):
         Path(images_path).mkdir(parents=True, exist_ok=True)
         logging.debug(f"Converting '{pdf_file.resolve()}'.")
         logging.debug(f"Image created at '{Path(image_name).resolve()}'.")
-        convert_from_path(pdf_file, output_folder=images_path, output_file=image_name, thread_count=8, fmt=format)
+        convert_from_path(pdf_file, output_folder=images_path, output_file=image_name, thread_count=threads, fmt=format)
 
-def ocr_images(input_path, output_path, format):
+def ocr_images_for_text(input_path, output_path, format):
     """
     Recursively finds all images of the given format and performs OCR on them to 
     create a text file containing the infomation that was found.
