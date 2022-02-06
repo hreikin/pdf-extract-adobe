@@ -24,9 +24,9 @@ def extract_pdf_adobe(source_path):
     pdf_amount = len(pdf_file_list)
     logging.info(f"Found {pdf_amount} PDF files, creating individual API requests.")
     for pdf in pdf_file_list:
-        _extract_all_from_pdf(pdf)
+        _create_adobe_request(pdf)
 
-def _extract_all_from_pdf(source_file):
+def _create_adobe_request(source_file):
     """
     Takes an input PDF file and builds a request which is sent to the Adobe PDF 
     Extract API. 
@@ -70,9 +70,9 @@ def _extract_all_from_pdf(source_file):
     except (ServiceApiException, ServiceUsageException, SdkException):
         logging.exception(f"Exception encountered while executing operation on '{source_file}'.")
         logging.info(f"Retrying operation on '{source_file}'.")
-        _extract_all_from_pdf(source_file)
+        _create_adobe_request(source_file)
 
-def extract_json_from_zip(zip_source, output_path):
+def extract_from_zip(zip_source, output_path):
     """
     Recursively finds all zip files within a source directory and un-zips them to 
     a given output directory.

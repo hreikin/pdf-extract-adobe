@@ -58,7 +58,7 @@ def _iterate_through_nested_dicts(nested_dict, output_file):
                 with open(output_file, "a") as stream:
                     stream.write(value + "\n")
 
-def convert_pdf_to_image(input_path, output_path, format):
+def split_all_pages_image(input_path, output_path, format):
     """
     Recursively finds all PDF files within a given directory and converts each 
     page of each PDF to an image using pdf2image. 
@@ -80,7 +80,7 @@ def convert_pdf_to_image(input_path, output_path, format):
         logging.debug(f"Image created at '{Path(image_name).resolve()}'.")
         convert_from_path(pdf_file, output_folder=images_path, output_file=image_name, thread_count=8, fmt=format)
 
-def ocr_converted_pdf_images(input_path, output_path, format):
+def ocr_images(input_path, output_path, format):
     """
     Recursively finds all images of the given format and performs OCR on them to 
     create a text file containing the infomation that was found.
