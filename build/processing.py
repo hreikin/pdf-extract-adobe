@@ -11,7 +11,7 @@ def split_all_pages_pdf(input_file):
     logging.info(f"The file '{input_file.name}' has {total_pages} pages to split.")
     logging.info(f"Output directory is '{output_dir}'.")
     logging.info("Splitting pages now.")
-    page_num = 1
+    page_num = 0
     while page_num < total_pages:
         pypdf_writer = PdfFileWriter()
         pypdf_writer.addPage(input_pdf.getPage(page_num))

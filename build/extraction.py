@@ -4,7 +4,7 @@ from pathlib import Path
 from PIL import Image
 from pdf2image import convert_from_path
 
-def target_element_in_json(schema_source, output_path, target_element):
+def target_element_in_json(schema_source, target_element):
     """
     Recursively finds all JSON files within a given source directory before 
     individually extracting the JSON files content into a dictionary.
@@ -16,8 +16,7 @@ def target_element_in_json(schema_source, output_path, target_element):
     :param output_path: Location to create output files.
     """
     json_file_list = Path(schema_source).rglob("*.json")
-    output_path = Path(output_path)
-    output_path.mkdir(parents=True, exist_ok=True)
+    output_path = Path(schema_source).with_stem("extracted-content")
     for json_file in json_file_list:
         txt_output_dir = output_path / json_file.parent.name
         txt_output_dir.mkdir(parents=True, exist_ok=True)
@@ -56,7 +55,7 @@ def _iterate_through_nested_dicts(nested_dict, output_file, target_element):
                 with open(output_file, "a") as stream:
                     stream.write(value + "\n")
 
-def split_all_pages_into_image(input_path, output_path, format):
+def split_all_pages_into_image(input_path, format):
     """
     Recursively finds all PDF files within a given directory and converts each 
     page of each PDF to an image using pdf2image. 
@@ -73,13 +72,13 @@ def split_all_pages_into_image(input_path, output_path, format):
     pdf_file_list = Path(input_path).rglob("*.pdf")
     for pdf_file in pdf_file_list:
         image_name = pdf_file.stem + "_page_"
-        images_path = output_path + pdf_file.stem
+        images_path = Path(input_path).with_stem("extracted-content") / pdf_file.stem
         Path(images_path).mkdir(parents=True, exist_ok=True)
         logging.debug(f"Converting '{pdf_file.resolve()}'.")
         logging.debug(f"Image created at '{Path(image_name).resolve()}'.")
         convert_from_path(pdf_file, output_folder=images_path, output_file=image_name, thread_count=threads, fmt=format)
 
-def ocr_images_for_text(input_path, output_path, format):
+def ocr_images_for_text(input_path, format):
     """
     Recursively finds all images of the given format and performs OCR on them to 
     create a text file containing the infomation that was found.
@@ -89,12 +88,11 @@ def ocr_images_for_text(input_path, output_path, format):
     :param format: File type to use for the conversion without the leading dot
     """
     input_path = Path(input_path)
-    output_path = Path(output_path)
     for directory in input_path.iterdir():
         images_file_list = sorted(Path(directory).rglob(f"*.{format}"))
         for item in images_file_list:
             split_name = item.name.split("_page_")
-            txt_file_path = f"{output_path}/{split_name[0]}/{split_name[0]}-OCR.txt"
+            txt_file_path = f"{input_path}/{split_name[0]}/{split_name[0]}-OCR.txt"
             logging.debug(f"Performing OCR on '{item.resolve()}'.")
             logging.debug(f"Creating text output file at '{Path(txt_file_path).resolve()}'.")
             ocr_string = pytesseract.image_to_string(Image.open(item))

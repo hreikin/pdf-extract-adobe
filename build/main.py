@@ -25,10 +25,10 @@ logging.getLogger('').addHandler(console)
 
 ################################################################################
 
-# Creates Json Schema zip file with Adobe API.
-source_path = "../test/pdfs/"
-logging.info("Creating JSON Schema with Adobe API.")
-adobe_json.extract_pdf_adobe(source_path)
+# # Creates Json Schema zip file with Adobe API.
+# source_path = "../test/pdfs/"
+# logging.info("Creating JSON Schema with Adobe API.")
+# adobe_json.extract_pdf_adobe(source_path)
 
 # # Extracts Json Schema from zip file. Automatically called after the API 
 # # requests are complete. Can be used on its own.
@@ -38,24 +38,21 @@ adobe_json.extract_pdf_adobe(source_path)
 
 # Targets "Text" entries from the Json Schema and adds them to a file for each pdf.
 schema_source = "../test/json-schema/"
-output_path = "../test/extracted-content/"
 target_element = "Text"
 logging.info("Targeting 'Text' entries from the JSON Schema.")
-extraction.target_element_in_json(schema_source, output_path, target_element)
+extraction.target_element_in_json(schema_source, target_element)
 
 # Convert PDF files to images for OCR/accuracy check.
 pdf_path = "../test/pdfs/"
-image_path = "../test/extracted-content/"
 image_format = "png"
 logging.info("Converting PDF files to images.")
-extraction.split_all_pages_into_image(pdf_path, image_path, image_format)
+extraction.split_all_pages_into_image(pdf_path, image_format)
 
 # Run the converted pdf images through OCR and create a text file for each one as output.
 input_path = "../test/extracted-content/"
-output_path = "../test/extracted-content/"
 image_format = "png"
 logging.info("Running the converted images through OCR.")
-extraction.ocr_images_for_text(input_path, output_path, image_format)
+extraction.ocr_images_for_text(input_path, image_format)
 
 # Confidence Check
 input_path = "../test/extracted-content/"
