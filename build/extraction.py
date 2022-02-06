@@ -1,7 +1,5 @@
-from __future__ import print_function
+import parse_tab
 import logging, json, pytesseract, fitz
-
-from ParseTab import ParseTab
 
 from pathlib import Path
 from PIL import Image
@@ -204,7 +202,7 @@ def extract_tables_from_pdf(input_pdf):
     #==============================================================================
     # now get the table
     #==============================================================================
-    tab = ParseTab(page, [0, ymin, 9999, ymax])
+    tab = parse_tab.parse_tab(page, [0, ymin, 9999, ymax])
 
     #print(table_title)
     #for t in tab:

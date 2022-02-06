@@ -27,7 +27,7 @@ GNU AFFERO GPL V3
 # ==============================================================================
 # Function ParseTab - parse a document table into a Python list of lists
 # ==============================================================================
-def ParseTab(page, bbox, columns=None):
+def parse_tab(page, bbox, columns=None):
     """Returns the parsed table of a page in a PDF / (open) XPS / EPUB document.
     Parameters:
     page: fitz.Page object
