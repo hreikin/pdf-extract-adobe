@@ -82,6 +82,14 @@ file_one = "../test/pdfs/Daresbury_labs_CS.1.pdf"
 file_two = "../test/pdfs/Sputtering-Targets.pdf"
 processing.overlay(file_one, file_two)
 
-# Extract tables from PDF
+# Extract tables from PDF - MANUAL ONLY, might be a way to automate with a list.
 pdf_path = "../test/pdfs/Sputtering-Targets.pdf"
-extraction.extract_tables_from_pdf(pdf_path)
+start = "Metals "
+end = "mmmmmmmm"
+extraction.extract_tables_from_pdf(pdf_path, start, end)
+pdf_path = "../test/pdfs/Sputtering-Targets.pdf"
+start = " "
+end = "Other materials"
+page_num = 1
+table_num = 2
+extraction.extract_tables_from_pdf(pdf_path, start, end, page_number=page_num, table_number=table_num)
