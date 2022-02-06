@@ -8,7 +8,7 @@
 ```
 python3 -m venv .venv
 source .venv/bin/activate
-pip install scrapy pdfservices-sdk pytesseract pymupdf
+pip install scrapy pdfservices-sdk pytesseract pypdf2 pymupdf
 ```
 
 ## Known Issue & Workaround
