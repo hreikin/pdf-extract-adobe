@@ -1,4 +1,4 @@
-import adobe_json, confidence, processing
+import adobe_json, confidence, extraction, processing
 import logging
 
 ##################################### LOGS #####################################
@@ -30,32 +30,32 @@ source_path = "../test/pdfs/"
 logging.info("Creating JSON Schema with Adobe API.")
 adobe_json.extract_pdf_adobe(source_path)
 
-# # Extracts Json Schema from zip file.
+# # Extracts Json Schema from zip file. Automatically called after the API 
+# # requests are complete. Can be used on its own.
 # zip_source = "../test/json-zips/"
-# json_output = "../test/json-schema/"
 # logging.info("Extracting JSON Schema from zip files.")
-# extraction.extract_from_zip(zip_source, json_output)
+# utilities.extract_from_zip(zip_source)
 
 # # Targets "Text" entries from the Json Schema and adds them to a file for each pdf.
 # schema_source = "../test/json-schema/"
 # output_path = "../test/confidence-check/"
 # target_element = "Text"
 # logging.info("Targeting 'Text' entries from the JSON Schema.")
-# confidence.target_element_in_json(schema_source, output_path, target_element)
+# extraction.target_element_in_json(schema_source, output_path, target_element)
 
 # # Convert PDF files to images for OCR/accuracy check.
 # pdf_path = "../test/pdfs/"
 # image_path = "../test/confidence-check/converted-images/"
 # image_format = "png"
 # logging.info("Converting PDF files to images.")
-# confidence.split_all_pages_image(pdf_path, image_path, image_format)
+# extraction.split_all_pages_image(pdf_path, image_path, image_format)
 
 # # Run the converted pdf images through OCR and create a text file for each one as output.
 # input_path = "../test/confidence-check/"
 # output_path = "../test/confidence-check/"
 # image_format = "png"
 # logging.info("Running the converted images through OCR.")
-# confidence.ocr_images(input_path, output_path, image_format)
+# extraction.ocr_images(input_path, output_path, image_format)
 
 # # Confidence Check
 # input_path = "../test/confidence-check/"
@@ -64,7 +64,7 @@ adobe_json.extract_pdf_adobe(source_path)
 # logging.info("Process complete, exiting.")
 
 # # Split all PDF pages
-# pdf_file = "../test/pdfs/gce-core-rules-1.21.pdf"
+# pdf_file = "../test/pdfs/Daresbury_labs_CS.1.pdf"
 # processing.split_all_pages_pdf(pdf_file)
 
 # # Merge two PDF files.

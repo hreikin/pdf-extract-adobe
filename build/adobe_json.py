@@ -28,6 +28,7 @@ def extract_pdf_adobe(source_path):
     logging.info(f"Found {pdf_amount} PDF files, creating individual API requests.")
     for pdf in pdf_file_list:
         _create_adobe_request(pdf)
+    logging.info("Extracting JSON Schema.")
     utilities.extract_from_zip(zip_path)
 
 def _create_adobe_request(source_file):
