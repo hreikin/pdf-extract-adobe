@@ -1,4 +1,4 @@
-import os, logging, json, pytesseract
+import logging, json, pytesseract, fitz
 
 from pathlib import Path
 from PIL import Image
@@ -68,15 +68,21 @@ def split_all_pages_into_image(input_path, format):
     :param output_path: Directory to output the converted images to.
     :param format: File type to use for the conversion without the leading dot.
     """
-    threads = os.cpu_count()
+    # To get better resolution
+    zoom_x = 2.0
+    zoom_y = 2.0
+    zoom_matrix = fitz.Matrix(zoom_x, zoom_y)
     pdf_file_list = Path(input_path).rglob("*.pdf")
     for pdf_file in pdf_file_list:
+        logging.debug(f"Converting '{pdf_file.resolve()}'.")
+        doc = fitz.open(pdf_file)
         image_name = pdf_file.stem + "_page_"
         images_path = Path(input_path).with_stem("extracted-content") / pdf_file.stem
         Path(images_path).mkdir(parents=True, exist_ok=True)
-        logging.debug(f"Converting '{pdf_file.resolve()}'.")
         logging.debug(f"Image created at '{Path(image_name).resolve()}'.")
-        convert_from_path(pdf_file, output_folder=images_path, output_file=image_name, thread_count=threads, fmt=format)
+        for page in doc:
+            pix = page.get_pixmap(matrix=zoom_matrix)
+            pix.save(f"{images_path}/{image_name}{page.number}{format}")
 
 def ocr_images_for_text(input_path, format):
     """
@@ -89,12 +95,28 @@ def ocr_images_for_text(input_path, format):
     """
     input_path = Path(input_path)
     for directory in input_path.iterdir():
-        images_file_list = sorted(Path(directory).rglob(f"*.{format}"))
+        images_file_list = sorted(Path(directory).rglob(f"*{format}"))
         for item in images_file_list:
             split_name = item.name.split("_page_")
-            txt_file_path = f"{input_path}/{split_name[0]}/{split_name[0]}-OCR.txt"
+            txt_file_path = f"{input_path}/{split_name[0]}/{split_name[0]}-IMAGE-OCR.txt"
             logging.debug(f"Performing OCR on '{item.resolve()}'.")
             logging.debug(f"Creating text output file at '{Path(txt_file_path).resolve()}'.")
             ocr_string = pytesseract.image_to_string(Image.open(item))
             with open(txt_file_path, "a") as stream:
                 stream.write(ocr_string)
+
+def extract_text_from_pdf(input_path):
+    input_path = Path(input_path)
+    pdf_file_list = sorted(Path(input_path).rglob(f"*.pdf"))
+    for pdf in pdf_file_list:
+        txt_file_dir = f"{input_path.with_name('extracted-content')}/{pdf.stem}"
+        txt_file_path = f"{txt_file_dir}/{pdf.stem}-PDF-EXTRACT.txt"
+        Path(txt_file_dir).mkdir(parents=True, exist_ok=True)
+        logging.debug(f"Extracting text from '{pdf.resolve()}'.")
+        logging.debug(f"Creating text output file at '{Path(txt_file_path).resolve()}'.")
+        with fitz.open(pdf) as doc:
+            pdf_text = ""
+            for page in doc:
+                pdf_text += page.get_text()
+        with open(txt_file_path, "a") as stream:
+            stream.write(pdf_text)
