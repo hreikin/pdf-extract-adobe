@@ -46,7 +46,7 @@ def _iterate_through_nested_dicts(nested_dict, output_file_txt, output_file_md, 
             text_index = keys_list.index(key)
             path_index = keys_list.index("Path")
             split_path = str(values_list[path_index]).split("/")
-            _process_text_to_markdown(keys_list, values_list, text_index, path_index, split_path, output_file_md)
+            _process_json_to_markdown(keys_list, values_list, text_index, path_index, split_path, output_file_md)
             with open(output_file_txt, "a") as stream:
                 stream.write(str(keys_list[path_index]) + " : " + str(values_list[path_index]) + "\n")
                 stream.write(str(keys_list[text_index]) + " : " + str(values_list[text_index]) + "\n\n")
@@ -61,16 +61,18 @@ def _iterate_through_nested_dicts(nested_dict, output_file_txt, output_file_md, 
                         if isinstance(item, dict):
                             _iterate_through_nested_dicts(item, output_file_txt, output_file_md, target_element)
 
-def _process_text_to_markdown(keys_list, values_list, text_index, path_index, split_path, output_file_md):
+def _process_json_to_markdown(keys_list, values_list, text_index, path_index, split_path, output_file_md):
     headings = ["Title", "H1", "H2", "H3", "H4", "H5", "H6"]
     paragraphs = ["P", "P[1]", "P[2]", "P[3]", "P[4]", "P[5]", "P[6]", "P[7]", "P[8]", "P[9]", "LBody"]
     lists = ["L", "LI[1]", "LI[2]", "LI[3]", "LI[4]", "LI[5]", "LI[6]", "LI[7]", "LI[8]", "LI[9]"]
     table_headers = ["TH", "TH[1]", "TH[2]", "TH[3]", "TH[4]", "TH[5]", "TH[6]", "TH[7]", "TH[8]", "TH[9]"]
     # table_rows = ["TR[1]", "TR[2]", "TR[3]", "TR[4]", "TR[5]", "TR[6]", "TR[7]", "TR[8]", "TR[9]"]
     table_data = ["TD", "TD[1]", "TD[2]", "TD[3]", "TD[4]", "TD[5]", "TD[6]", "TD[7]", "TD[8]", "TD[9]"]
-    unwanted = ["Aside", "Lbl"]
+    unwanted = ["Aside"]
     for item in split_path[::-1]:
-        if item in unwanted:
+        index = split_path.index(item)
+        prev_index = index - 1
+        if split_path[prev_index] in unwanted:
             break
         elif item in headings:
             with open(output_file_md, "a") as stream:
@@ -100,8 +102,16 @@ def _process_text_to_markdown(keys_list, values_list, text_index, path_index, sp
                     stream.write("| " + str(values_list[text_index]))
                     break
         elif item in paragraphs:
-            with open(output_file_md, "a") as stream:
-                stream.write(str(values_list[text_index]) + " ")
+            if split_path[prev_index] in table_data:
+                continue
+            else:
+                with open(output_file_md, "a") as stream:
+                    stream.write(str(values_list[text_index]) + " ")
+                break
+        # elif item in paragraphs:
+        #     with open(output_file_md, "a") as stream:
+        #         stream.write(str(values_list[text_index]) + " ")
+        #     break
         # elif item in table_rows:
         #     with open(output_file_md, "a") as stream:
         #         stream.write(str(values_list[text_index]) + ", ")
