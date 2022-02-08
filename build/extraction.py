@@ -21,13 +21,14 @@ def target_element_in_json(schema_source, target_element):
         txt_output_dir = output_path / json_file.parent.name
         txt_output_dir.mkdir(parents=True, exist_ok=True)
         txt_output = txt_output_dir / json_file.name.replace(".json", ".txt")
+        md_output = txt_output_dir / json_file.name.replace(".json", ".md")
         with json_file.open() as stream:
             extracted_json = json.loads(stream.read())
         logging.debug(f"Targeting '{target_element}' elements within '{json_file.resolve()}'.")
         logging.debug(f"Creating text output file at '{txt_output.resolve()}'.")
-        _iterate_through_nested_dicts(extracted_json, txt_output, target_element)
+        _iterate_through_nested_dicts(extracted_json, txt_output, md_output, target_element)
 
-def _iterate_through_nested_dicts(nested_dict, output_file, target_element):
+def _iterate_through_nested_dicts(nested_dict, output_file_txt, output_file_md, target_element):
     """
     Recursively iterates through a dictionary and targets all "Text" keys and 
     their values to write to an output file.
@@ -40,26 +41,54 @@ def _iterate_through_nested_dicts(nested_dict, output_file, target_element):
     """
     keys_list = list(nested_dict.keys())
     values_list = list(nested_dict.values())
-    print(keys_list)
     for key,value in nested_dict.items():
         if key == target_element:
             text_index = keys_list.index(key)
             path_index = keys_list.index("Path")
-            logging.debug(f"Found '{key}' element: '{value}'")
-            with open(output_file, "a") as stream:
-                # stream.write(value + "\n")
+            split_path = str(values_list[path_index]).split("/")
+            _process_text_to_markdown(keys_list, values_list, text_index, path_index, split_path, output_file_md)
+            with open(output_file_txt, "a") as stream:
                 stream.write(str(keys_list[path_index]) + " : " + str(values_list[path_index]) + "\n")
                 stream.write(str(keys_list[text_index]) + " : " + str(values_list[text_index]) + "\n\n")
         elif isinstance(value, dict):
-            _iterate_through_nested_dicts(value, output_file, target_element)
+            _iterate_through_nested_dicts(value, output_file_txt, output_file_md, target_element)
         elif isinstance(value, list):
             for item in value:
                 if isinstance(item, dict):
-                    _iterate_through_nested_dicts(item, output_file, target_element)
+                    _iterate_through_nested_dicts(item, output_file_txt, output_file_md, target_element)
                 elif isinstance(value, list):
                     for item in value:
                         if isinstance(item, dict):
-                            _iterate_through_nested_dicts(item, output_file, target_element)
+                            _iterate_through_nested_dicts(item, output_file_txt, output_file_md, target_element)
+
+def _process_text_to_markdown(keys_list, values_list, text_index, path_index, split_path, output_file_md):
+    headings = ["Title", "H1", "H2", "H3", "H4", "H5", "H6"]
+    paragraphs = ["P", "P[1]", "P[2]", "P[3]", "P[4]", "P[5]", "P[6]", "P[7]", "P[8]", "P[9]", "LBody"]
+    lists = ["L", "LI[1]", "LI[2]", "LI[3]", "LI[4]", "LI[5]", "LI[6]", "LI[7]", "LI[8]", "LI[9]"]
+    tables = ["TH"]
+    unwanted = ["Aside", "TR[1]", "TR[2]", "TR[3]", "TR[4]", "TR[5]", "TR[6]", "TR[7]", "TR[8]", "TR[9]"]
+    for item in split_path:
+        if item in unwanted:
+            return
+        if item in headings:
+            with open(output_file_md, "a") as stream:
+                stream.write("\n## " + str(values_list[text_index]) + "\n")
+        elif item in paragraphs:
+            with open(output_file_md, "a") as stream:
+                stream.write(str(values_list[text_index]) + " ")
+        elif item in lists:
+            with open(output_file_md, "a") as stream:
+                stream.write("\n" + "- ")
+        elif item in tables:
+            with open(output_file_md, "a") as stream:
+                stream.write("\n\n")
+                stream.write("\nA | TABLE | GOES | HERE")
+                stream.write("\n--- | --- | --- | ---")
+                stream.write("\nTHIS | WOULD | BE | WHERE")
+                stream.write("\nTHE | TABLE | CONTENT | GOES")
+                stream.write("\nTHIS | NEEDS | MORE | WORK")
+                stream.write("\n\n")
+
 
 
 def split_all_pages_into_image(input_path, format):
