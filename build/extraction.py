@@ -65,31 +65,47 @@ def _process_text_to_markdown(keys_list, values_list, text_index, path_index, sp
     headings = ["Title", "H1", "H2", "H3", "H4", "H5", "H6"]
     paragraphs = ["P", "P[1]", "P[2]", "P[3]", "P[4]", "P[5]", "P[6]", "P[7]", "P[8]", "P[9]", "LBody"]
     lists = ["L", "LI[1]", "LI[2]", "LI[3]", "LI[4]", "LI[5]", "LI[6]", "LI[7]", "LI[8]", "LI[9]"]
-    tables = ["TH"]
-    unwanted = ["Aside", "TR[1]", "TR[2]", "TR[3]", "TR[4]", "TR[5]", "TR[6]", "TR[7]", "TR[8]", "TR[9]"]
-    for item in split_path:
+    table_headers = ["TH", "TH[1]", "TH[2]", "TH[3]", "TH[4]", "TH[5]", "TH[6]", "TH[7]", "TH[8]", "TH[9]"]
+    # table_rows = ["TR[1]", "TR[2]", "TR[3]", "TR[4]", "TR[5]", "TR[6]", "TR[7]", "TR[8]", "TR[9]"]
+    table_data = ["TD", "TD[1]", "TD[2]", "TD[3]", "TD[4]", "TD[5]", "TD[6]", "TD[7]", "TD[8]", "TD[9]"]
+    unwanted = ["Aside", "Lbl"]
+    for item in split_path[::-1]:
         if item in unwanted:
-            return
-        if item in headings:
+            break
+        elif item in headings:
             with open(output_file_md, "a") as stream:
                 stream.write("\n## " + str(values_list[text_index]) + "\n")
+                break
+        elif item in lists:
+            with open(output_file_md, "a") as stream:
+                stream.write("\n- ")
+                break
+        elif item in table_headers:
+            if item == "TH":
+                with open(output_file_md, "a") as stream:
+                    stream.write("\n")
+                    stream.write("\n" + str(values_list[text_index]))
+                    break
+            else:
+                with open(output_file_md, "a") as stream:
+                    stream.write(str(values_list[text_index]) + "| ")
+                    break
+        elif item in table_data:
+            if item == "TD":
+                with open(output_file_md, "a") as stream:
+                    stream.write("\n" + str(values_list[text_index]))
+                    break
+            else:
+                with open(output_file_md, "a") as stream:
+                    stream.write("| " + str(values_list[text_index]))
+                    break
         elif item in paragraphs:
             with open(output_file_md, "a") as stream:
                 stream.write(str(values_list[text_index]) + " ")
-        elif item in lists:
-            with open(output_file_md, "a") as stream:
-                stream.write("\n" + "- ")
-        elif item in tables:
-            with open(output_file_md, "a") as stream:
-                stream.write("\n\n")
-                stream.write("\nA | TABLE | GOES | HERE")
-                stream.write("\n--- | --- | --- | ---")
-                stream.write("\nTHIS | WOULD | BE | WHERE")
-                stream.write("\nTHE | TABLE | CONTENT | GOES")
-                stream.write("\nTHIS | NEEDS | MORE | WORK")
-                stream.write("\n\n")
-
-
+        # elif item in table_rows:
+        #     with open(output_file_md, "a") as stream:
+        #         stream.write(str(values_list[text_index]) + ", ")
+        #         break
 
 def split_all_pages_into_image(input_path, format):
     """
