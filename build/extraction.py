@@ -66,7 +66,7 @@ def _process_json_to_markdown(keys_list, values_list, text_index, path_index, sp
     paragraphs = ["P", "P[1]", "P[2]", "P[3]", "P[4]", "P[5]", "P[6]", "P[7]", "P[8]", "P[9]", "LBody"]
     lists = ["L", "LI[1]", "LI[2]", "LI[3]", "LI[4]", "LI[5]", "LI[6]", "LI[7]", "LI[8]", "LI[9]"]
     table_headers = ["TH", "TH[1]", "TH[2]", "TH[3]", "TH[4]", "TH[5]", "TH[6]", "TH[7]", "TH[8]", "TH[9]"]
-    # table_rows = ["TR[1]", "TR[2]", "TR[3]", "TR[4]", "TR[5]", "TR[6]", "TR[7]", "TR[8]", "TR[9]"]
+    table_rows = ["TR[1]", "TR[2]", "TR[3]", "TR[4]", "TR[5]", "TR[6]", "TR[7]", "TR[8]", "TR[9]", "TR[10]", "TR[11]", "TR[12]", "TR[13]", "TR[14]", "TR[15]", "TR[16]", "TR[17]", "TR[18]", "TR[19]"]
     table_data = ["TD", "TD[1]", "TD[2]", "TD[3]", "TD[4]", "TD[5]", "TD[6]", "TD[7]", "TD[8]", "TD[9]"]
     unwanted = ["Aside"]
     for item in split_path[::-1]:
@@ -83,10 +83,10 @@ def _process_json_to_markdown(keys_list, values_list, text_index, path_index, sp
                 stream.write("\n- ")
                 break
         elif item in table_headers:
-            if item == "TH":
+            if item == "TH" or item == "TH[1]":
                 with open(output_file_md, "a") as stream:
-                    stream.write("\n")
-                    stream.write("\n" + str(values_list[text_index]))
+                    # stream.write("\n\n")
+                    stream.write("\n\n| " + str(values_list[text_index]))
                     break
             else:
                 with open(output_file_md, "a") as stream:
@@ -95,15 +95,20 @@ def _process_json_to_markdown(keys_list, values_list, text_index, path_index, sp
         elif item in table_data:
             if item == "TD":
                 with open(output_file_md, "a") as stream:
-                    stream.write("\n" + str(values_list[text_index]))
-                    break
+                    stream.write("|")
+                    stream.write("\n| " + str(values_list[text_index]))
+                break
             else:
                 with open(output_file_md, "a") as stream:
                     stream.write("| " + str(values_list[text_index]))
                     break
         elif item in paragraphs:
-            if split_path[prev_index] in table_data:
+            if split_path[prev_index] in table_headers[0]:
                 continue
+            elif split_path[prev_index] in table_data:
+                continue
+            # if split_path[prev_index] in table_data[0]:
+            #     continue
             else:
                 with open(output_file_md, "a") as stream:
                     stream.write(str(values_list[text_index]) + " ")
