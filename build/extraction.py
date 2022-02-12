@@ -1,5 +1,6 @@
 import parse_tab
 import logging, json, pytesseract, fitz
+import pandas as pd
 
 from pathlib import Path
 from PIL import Image
@@ -41,15 +42,23 @@ def _iterate_through_nested_dicts(nested_dict, output_file_txt, output_file_md, 
     """
     keys_list = list(nested_dict.keys())
     values_list = list(nested_dict.values())
+    path_text_pairs = list()
+    csv_list = list()
     for key,value in nested_dict.items():
+        if key == "filePaths":
+            for file in value:
+                if str(file).endswith(".csv"):
+                    csv_list.append(file)
+
         if key == target_element:
             text_index = keys_list.index(key)
             path_index = keys_list.index("Path")
-            split_path = str(values_list[path_index]).split("/")
-            _process_json_to_markdown(keys_list, values_list, text_index, path_index, split_path, output_file_md)
+            temp_tuple = (values_list[path_index], values_list[text_index])
+            path_text_pairs.append(temp_tuple)
             with open(output_file_txt, "a") as stream:
-                stream.write(str(keys_list[path_index]) + " : " + str(values_list[path_index]) + "\n")
-                stream.write(str(keys_list[text_index]) + " : " + str(values_list[text_index]) + "\n\n")
+                stream.write(str(values_list[text_index]) + "\n")               # Swap with below after testing.
+                # stream.write(str(keys_list[path_index]) + " : " + str(values_list[path_index]) + "\n")
+                # stream.write(str(keys_list[text_index]) + " : " + str(values_list[text_index]) + "\n\n")
         elif isinstance(value, dict):
             _iterate_through_nested_dicts(value, output_file_txt, output_file_md, target_element)
         elif isinstance(value, list):
@@ -61,66 +70,132 @@ def _iterate_through_nested_dicts(nested_dict, output_file_txt, output_file_md, 
                         if isinstance(item, dict):
                             _iterate_through_nested_dicts(item, output_file_txt, output_file_md, target_element)
 
-def _process_json_to_markdown(keys_list, values_list, text_index, path_index, split_path, output_file_md):
-    headings = ["Title", "H1", "H2", "H3", "H4", "H5", "H6"]
-    paragraphs = ["P", "P[1]", "P[2]", "P[3]", "P[4]", "P[5]", "P[6]", "P[7]", "P[8]", "P[9]", "LBody"]
-    lists = ["L", "LI[1]", "LI[2]", "LI[3]", "LI[4]", "LI[5]", "LI[6]", "LI[7]", "LI[8]", "LI[9]"]
-    table_headers = ["TH", "TH[1]", "TH[2]", "TH[3]", "TH[4]", "TH[5]", "TH[6]", "TH[7]", "TH[8]", "TH[9]"]
-    table_rows = ["TR[1]", "TR[2]", "TR[3]", "TR[4]", "TR[5]", "TR[6]", "TR[7]", "TR[8]", "TR[9]", "TR[10]", "TR[11]", "TR[12]", "TR[13]", "TR[14]", "TR[15]", "TR[16]", "TR[17]", "TR[18]", "TR[19]"]
-    table_data = ["TD", "TD[1]", "TD[2]", "TD[3]", "TD[4]", "TD[5]", "TD[6]", "TD[7]", "TD[8]", "TD[9]"]
+    _create_md_tables(csv_list, output_file_txt)
+    _phase_one(path_text_pairs, output_file_md)
+
+def _create_md_tables(csv_list, output_file_txt):
+    for csv_file in csv_list:
+        # print(csv_file)
+        # print(output_file_txt)
+        # txt_path = Path(output_file_txt)
+        split_file_path = str(csv_file).rsplit("/")
+        for item in split_file_path:
+            if item.endswith(".csv"):
+                csv_name = item
+        output_dir = Path(output_file_txt).parent
+        output_dir.mkdir(parents=True, exist_ok=True)
+        csv_output = output_dir / csv_name.replace(".csv", ".md")
+        input_dir = str(output_dir).replace("extracted-content", "json-schema")
+        input_path = Path(input_dir + "/" + csv_file)
+        df = pd.read_csv(input_path, engine="python")
+        with open(csv_output, "w") as stream:
+            df.fillna("", inplace=True)
+            df.to_markdown(buf=stream, tablefmt="github")
+
+
+
+
+################################################################################
+# PHASE ONE
+################################################################################
+def _phase_one(path_text_pairs, output_file_md):
+    headings = ["Title"]
+    paragraphs = ["P", "LBody", "ParagraphSpan", "Span", "StyleSpan"]
+    lists = ["L"]
+    table_headers = ["Table"]
+    table_rows = ["TR"]
+    table_data = ["TD"]
     unwanted = ["Aside"]
-    for item in split_path[::-1]:
-        index = split_path.index(item)
-        prev_index = index - 1
-        if split_path[prev_index] in unwanted:
-            break
-        elif item in headings:
-            with open(output_file_md, "a") as stream:
-                stream.write("\n## " + str(values_list[text_index]) + "\n")
+    phase_one = []
+
+    for i in range(0, 101):
+        headings.append(f"H{i}")
+        paragraphs.append(f"P[{i}]")
+        lists.append(f"LI[{i}]")
+        # table_headers.append(f"TH[{i}]")
+        table_headers.append(f"Table[{i}]")
+        table_rows.append(f"TR[{i}]")
+        table_data.append(f"TD[{i}]")
+    # tr_val = None
+    for (path, text) in path_text_pairs:
+        split_path_list = path.split("/")
+        # print(split_path_list)
+        for item in split_path_list:
+            if item in headings:
+                temp_tuple = f"\n## {text}\n"
+                phase_one.append(temp_tuple)
                 break
-        elif item in lists:
-            with open(output_file_md, "a") as stream:
-                stream.write("\n- ")
-                break
-        elif item in table_headers:
-            if item == "TH" or item == "TH[1]":
-                with open(output_file_md, "a") as stream:
-                    # stream.write("\n\n")
-                    stream.write("\n\n| " + str(values_list[text_index]))
+            if item in lists:
+                if "*" in text:
                     break
-            else:
-                with open(output_file_md, "a") as stream:
-                    stream.write(str(values_list[text_index]) + "| ")
+                if "◈" in text:
                     break
-        elif item in table_data:
-            if item == "TD":
-                with open(output_file_md, "a") as stream:
-                    stream.write("|")
-                    stream.write("\n| " + str(values_list[text_index]))
-                break
-            else:
-                with open(output_file_md, "a") as stream:
-                    stream.write("| " + str(values_list[text_index]))
+                if "-" == text:
                     break
-        elif item in paragraphs:
-            if split_path[prev_index] in table_headers[0]:
-                continue
-            elif split_path[prev_index] in table_data:
-                continue
-            # if split_path[prev_index] in table_data[0]:
-            #     continue
-            else:
-                with open(output_file_md, "a") as stream:
-                    stream.write(str(values_list[text_index]) + " ")
+                temp_tuple = f"- {text}\n"
+                phase_one.append(temp_tuple)
                 break
-        # elif item in paragraphs:
-        #     with open(output_file_md, "a") as stream:
-        #         stream.write(str(values_list[text_index]) + " ")
-        #     break
-        # elif item in table_rows:
-        #     with open(output_file_md, "a") as stream:
-        #         stream.write(str(values_list[text_index]) + ", ")
-        #         break
+            if item in paragraphs:
+                temp_tuple = f"{text} "
+                phase_one.append(temp_tuple)
+                break
+            if item in table_headers:
+                temp_tuple = f"\n{item} GOESHEREGOESHEREGOESHEREGOESHERE\n"
+                phase_one.append(temp_tuple)
+                break
+    _phase_two_three_four(phase_one, output_file_md)
+    
+
+def _phase_two_three_four(phase_one,output_file_md):
+    ############################################################################
+    ############################################################################
+    phase_two = []
+    md_dir = Path(output_file_md).parent
+    md_files = list(md_dir.rglob("fileoutpart*.md"))
+    temp_file = Path(output_file_md).with_name("TEMP.md")
+    with open(temp_file, "a") as stream:
+        stream.writelines(phase_one)
+    with open(temp_file, "r") as stream:
+        dup_lines = stream.readlines()
+    for line in dup_lines:
+        # line = line.strip()
+        if line not in phase_two:
+            phase_two.append(line)
+    with open(temp_file, "w") as stream:
+        stream.writelines("".join(phase_two))
+    ############################################################################
+    ############################################################################
+    phase_three = []
+    with open(temp_file, "r") as stream:
+        whitespace_lines = stream.readlines()
+    for line in whitespace_lines:        
+        if line not in phase_three and line.startswith("## "):
+            temp_string = f"{line}\n"
+            phase_three.append(temp_string)
+        else:
+            phase_three.append(line)
+    with open(temp_file, "w") as stream:
+        stream.writelines("".join(phase_three))
+    ############################################################################
+    ############################################################################
+    phase_four = []
+    with open(temp_file, "r") as stream:
+        table_lines = stream.readlines()
+    for line in table_lines:        
+        if "GOESHEREGOESHEREGOESHEREGOESHERE" in line:
+            tab_file = md_files.pop(-1)
+            with open(tab_file, "r") as stream:
+                tab_string = stream.read()
+            phase_four.append("\n\n")
+            phase_four.append(tab_string)
+            phase_four.append("\n\n\n")
+            continue
+        else:
+            phase_four.append(line)
+    with open(output_file_md, "w") as stream:
+        stream.writelines("".join(phase_four))
+    ############################################################################
+    ############################################################################
 
 def split_all_pages_into_image(input_path, format):
     """
