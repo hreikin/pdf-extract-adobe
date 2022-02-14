@@ -22,4 +22,5 @@ class DownloadPdfsSpider(scrapy.Spider):
                 item = DownloadFilesItem()
                 item['file_urls'] = [url]
                 item['original_filename'] = url.split("/")[-1]
+                item['page'] = response.url
                 yield item

@@ -14,4 +14,5 @@ class DownloadItem(scrapy.Item):
 class DownloadFilesItem(scrapy.Item):
     file_urls = scrapy.Field()
     files = scrapy.Field()
+    page = scrapy.Field()
     original_filename = scrapy.Field()
