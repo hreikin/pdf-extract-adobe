@@ -6,6 +6,11 @@ from pathlib import Path
 from PIL import Image
 
 def target_element_in_json(schema_source, target_element):
+    """
+    Recursively finds all JSON files within a directory, iterates through the 
+    dictionary and converts any necessary tables before finally converting the 
+    extracted content to markdown and integrating it with the converted tables.
+    """
     json_file_list = Path(schema_source).rglob("*.json")
     out_dir = Path(schema_source).with_stem("extracted-content").resolve()
     logging.info("Extracting JSON content.")
@@ -34,7 +39,13 @@ def target_element_in_json(schema_source, target_element):
     for item in temp_files:
         Path(item).unlink()
 
-def _iterate_through_nested_dicts(nested_dict, target_element, txt_out, path_text_pairs, csv_list, in_dir):
+def _iterate_through_nested_dicts(nested_dict, txt_out, path_text_pairs, csv_list, in_dir):
+    """
+    Iterates through a dictionary targeting ".csv" files and "Text" entries 
+    within. If a list or dictionary is encountered this function is recursively 
+    called. Once all recursive functions have completed the "csv_list" and 
+    "path_text_pairs" are returned for use in the next functions.
+    """
     keys_list = list(nested_dict.keys())
     values_list = list(nested_dict.values())
     for key,value in nested_dict.items():
@@ -42,7 +53,7 @@ def _iterate_through_nested_dicts(nested_dict, target_element, txt_out, path_tex
             for file in value:
                 if str(file).endswith(".csv"):
                     csv_list.append(in_dir / file)
-        if key == target_element:
+        if key == "Text":
             text_index = keys_list.index(key)
             path_index = keys_list.index("Path")
             temp_tuple = (values_list[path_index], values_list[text_index])
@@ -52,18 +63,21 @@ def _iterate_through_nested_dicts(nested_dict, target_element, txt_out, path_tex
                 # stream.write(str(keys_list[path_index]) + " : " + str(values_list[path_index]) + "\n")
                 # stream.write(str(keys_list[text_index]) + " : " + str(values_list[text_index]) + "\n\n")
         elif isinstance(value, dict):
-            _iterate_through_nested_dicts(value, target_element, txt_out, path_text_pairs, csv_list, in_dir)
+            _iterate_through_nested_dicts(value, txt_out, path_text_pairs, csv_list, in_dir)
         elif isinstance(value, list):
             for item in value:
                 if isinstance(item, dict):
-                    _iterate_through_nested_dicts(item, target_element, txt_out, path_text_pairs, csv_list, in_dir)
+                    _iterate_through_nested_dicts(item, txt_out, path_text_pairs, csv_list, in_dir)
                 elif isinstance(value, list):
                     for item in value:
                         if isinstance(item, dict):
-                            _iterate_through_nested_dicts(item, target_element, txt_out, path_text_pairs, csv_list, in_dir)
+                            _iterate_through_nested_dicts(item, txt_out, path_text_pairs, csv_list, in_dir)
     return csv_list, path_text_pairs
 
 def _create_md_tables(csv_list, tab_dir):
+    """
+    Converts found ".csv" tables into Github markdown formatting using Pandas.
+    """
     for csv_file in csv_list:
         tab_name = Path(csv_file).with_suffix(".md").name
         md_out = tab_dir / tab_name
@@ -72,13 +86,15 @@ def _create_md_tables(csv_list, tab_dir):
             df.fillna("", inplace=True)
             df.to_markdown(buf=stream, tablefmt="github")
 
-
-
-
 ################################################################################
-# PHASE ONE
+# Format targeted "Text" items with markdown based on Path value.
 ################################################################################
 def _md_conversion(path_text_pairs, md_out):
+    """
+    Applies markdown formatting to the "Text" values based on the value 
+    determined from the "Path" and then adds the entry to a new list for further 
+    processing.
+    """
     headings = ["Title"]
     paragraphs = ["P", "LBody", "ParagraphSpan", "Span", "StyleSpan"]
     lists = ["L"]
@@ -118,6 +134,11 @@ def _md_conversion(path_text_pairs, md_out):
     _processing(phase_one, md_out)
     
 def _processing(phase_one, md_out):
+    """
+    Processes the markdown file before creating the final output. This removes 
+    duplicate lines, applies extra whitespace and replaces the table entries in 
+    the list with the relevant table before creating the final markdown output.
+    """
 ################################################################################
 # Variables.
 ################################################################################
@@ -178,15 +199,7 @@ def _processing(phase_one, md_out):
 def split_all_pages_into_image(input_path, format):
     """
     Recursively finds all PDF files within a given directory and converts each 
-    page of each PDF to an image using pdf2image. 
-    
-    The "convert_from_path()" parameter "thread_count" sets how many threads to 
-    use for the conversion. The amount of threads used is never more than the 
-    number of pages in a PDF.
-
-    :param input_path: Directory containing PDF files.
-    :param output_path: Directory to output the converted images to.
-    :param format: File type to use for the conversion without the leading dot.
+    page of each PDF to an image using PyMuPDF. 
     """
     # To get better resolution
     zoom_x = 2.0
@@ -199,8 +212,8 @@ def split_all_pages_into_image(input_path, format):
         image_name = pdf_file.stem + "_page_"
         images_path = Path(input_path).with_stem("extracted-content") / pdf_file.stem / "converted-pages"
         Path(images_path).mkdir(parents=True, exist_ok=True)
-        logging.debug(f"Image created at '{Path(image_name).resolve()}'.")
         for page in doc:
+            logging.debug(f"Image created at '{images_path}/{image_name}{page.number}{format}'.")
             pix = page.get_pixmap(matrix=zoom_matrix)
             pix.save(f"{images_path}/{image_name}{page.number}{format}")
 
@@ -208,10 +221,6 @@ def ocr_images_for_text(input_path, format):
     """
     Recursively finds all images of the given format and performs OCR on them to 
     create a text file containing the infomation that was found.
-
-    :param input_path: Directory containing images.
-    :param output_path: Directory to write the OCR content to.
-    :param format: File type to use for the conversion without the leading dot
     """
     input_path = Path(input_path)
     for directory in input_path.iterdir():
@@ -286,15 +295,15 @@ def extract_tables_from_pdf(input_pdf, start, end, page_number=0, table_number=1
     if not search_a:
         raise ValueError("The top delimiter was not found, exiting.")
     rect1 = search_a[0]  # the rectangle that surrounds the search string
-    ymin = rect1.y1     # table starts below this value
+    ymin = rect1.y1      # table starts below this value
     search_b = page.search_for(end, hit_max = 1)
     if not search_b:
         logging.warning("The bottom delimiter was not found - using end of page instead.")
         ymax = 99999
     else:
         rect2 = search_b[0]  # the rectangle that surrounds the search string
-        ymax = rect2.y0     # table ends above this value
-    if not ymin < ymax:     # something was wrong with the search strings
+        ymax = rect2.y0      # table ends above this value
+    if not ymin < ymax:      # something was wrong with the search strings
         raise ValueError("Something went wrong. The bottom delimiter is higher than the top.")
     table = parse_tab.parse_tab(page, [0, ymin, 9999, ymax])   
     csv_name = Path(f"{input_pdf.stem}-page-{page_number + 1}-table-{table_number}.csv")
