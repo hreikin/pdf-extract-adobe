@@ -36,11 +36,20 @@ adobe_json.extract_pdf_adobe(source_path)
 # logging.info("Extracting JSON Schema from zip files.")
 # utilities.extract_from_zip(zip_source)
 
+# Creates list of PDF/URL pairs.
+logging.info("Creating PDF/URL list.")
+adobe_json.create_pdf_url_list()
+
 # Targets "Text" entries from the Json Schema and adds them to a file for each pdf.
 schema_source = "../test/json-schema/"
 target_element = "Text"
 logging.info("Targeting 'Text' entries from the JSON Schema.")
 extraction.target_element_in_json(schema_source, target_element)
+
+# pdf_path = "../test/pdfs/"
+# extraction.pandoc_pdf_to_md(pdf_path)
+# markdown_path = "../test/extracted-content/"
+# extraction.post_process_markdown(markdown_path)
 
 # Convert PDF files to images for OCR/accuracy check.
 pdf_path = "../test/pdfs/"
@@ -60,36 +69,36 @@ logging.info("Performing basic confidence check.")
 confidence.confidence_check_text(input_path)
 logging.info("Process complete, exiting.")
 
-# Extract text from PDF
-pdf_path = "../test/pdfs/"
-extraction.extract_text_from_pdf(pdf_path)
+# # Extract text from PDF
+# pdf_path = "../test/pdfs/"
+# extraction.extract_text_from_pdf(pdf_path)
 
-# Extract images from PDF
-pdf_path = "../test/pdfs/"
-extraction.extract_images_from_pdf(pdf_path)
+# # Extract images from PDF
+# pdf_path = "../test/pdfs/"
+# extraction.extract_images_from_pdf(pdf_path)
 
-# Split all PDF pages
-pdf_file = "../test/pdfs/Daresbury_labs_CS.1.pdf"
-processing.split_all_pages_pdf(pdf_file)
+# # Split all PDF pages
+# pdf_file = "../test/pdfs/Daresbury_labs_CS.1.pdf"
+# processing.split_all_pages_pdf(pdf_file)
 
-# Merge two PDF files.
-file_one = "../test/pdfs/Daresbury_labs_CS.1.pdf"
-file_two = "../test/pdfs/Sputtering-Targets.pdf"
-processing.append_pdf(file_one, file_two)
+# # Merge two PDF files.
+# file_one = "../test/pdfs/Daresbury_labs_CS.1.pdf"
+# file_two = "../test/pdfs/Sputtering-Targets.pdf"
+# processing.append_pdf(file_one, file_two)
 
-# Overlay PDF with another.
-file_one = "../test/pdfs/Daresbury_labs_CS.1.pdf"
-file_two = "../test/pdfs/Sputtering-Targets.pdf"
-processing.overlay(file_one, file_two)
+# # Overlay PDF with another.
+# file_one = "../test/pdfs/Daresbury_labs_CS.1.pdf"
+# file_two = "../test/pdfs/Sputtering-Targets.pdf"
+# processing.overlay(file_one, file_two)
 
-# Extract tables from PDF - MANUAL ONLY, might be a way to automate with a list.
-pdf_path = "../test/pdfs/Sputtering-Targets.pdf"
-start = "Metals "
-end = "mmmmmmmm"
-extraction.extract_tables_from_pdf(pdf_path, start, end)
-pdf_path = "../test/pdfs/Sputtering-Targets.pdf"
-start = " "
-end = "Other materials"
-page_num = 1
-table_num = 2
-extraction.extract_tables_from_pdf(pdf_path, start, end, page_number=page_num, table_number=table_num)
+# # Extract tables from PDF - MANUAL ONLY, might be a way to automate with a list.
+# pdf_path = "../test/pdfs/Sputtering-Targets.pdf"
+# start = "Metals "
+# end = "mmmmmmmm"
+# extraction.extract_tables_from_pdf(pdf_path, start, end)
+# pdf_path = "../test/pdfs/Sputtering-Targets.pdf"
+# start = " "
+# end = "Other materials"
+# page_num = 1
+# table_num = 2
+# extraction.extract_tables_from_pdf(pdf_path, start, end, page_number=page_num, table_number=table_num)
