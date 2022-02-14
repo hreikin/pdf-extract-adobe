@@ -21,13 +21,16 @@ def target_element_in_json(schema_source, target_element):
     for json_file in json_file_list:
         txt_output_dir = output_path / json_file.parent.name
         txt_output_dir.mkdir(parents=True, exist_ok=True)
-        txt_output = txt_output_dir / json_file.name.replace(".json", ".txt")
-        md_output = txt_output_dir / json_file.name.replace(".json", ".md")
+        txt_output = txt_output_dir / str(txt_output_dir.name + "-EXTRACTED-JSON.txt")
+        md_output = txt_output_dir / str(txt_output_dir.name + ".md")
         with json_file.open() as stream:
             extracted_json = json.loads(stream.read())
-        logging.debug(f"Targeting '{target_element}' elements within '{json_file.resolve()}'.")
-        logging.debug(f"Creating text output file at '{txt_output.resolve()}'.")
+        logging.info(f"Targeting '{target_element}' elements within '{json_file.resolve()}'.")
+        
         _iterate_through_nested_dicts(extracted_json, txt_output, md_output, target_element)
+        logging.info(f"Extracting text, converting tables and processing output.")
+        logging.info(f"Creating '{txt_output.resolve()}'.")
+        logging.info(f"Creating '{md_output.resolve()}'.")
 
 def _iterate_through_nested_dicts(nested_dict, output_file_txt, output_file_md, target_element):
     """
@@ -69,7 +72,6 @@ def _iterate_through_nested_dicts(nested_dict, output_file_txt, output_file_md, 
                     for item in value:
                         if isinstance(item, dict):
                             _iterate_through_nested_dicts(item, output_file_txt, output_file_md, target_element)
-
     _create_md_tables(csv_list, output_file_txt)
     _phase_one(path_text_pairs, output_file_md)
 
