@@ -10,9 +10,9 @@ def target_element_in_json(schema_source, target_element):
     out_dir = Path(schema_source).with_stem("extracted-content").resolve()
     logging.info("Extracting JSON content.")
     for json_file in json_file_list:
-        in_dir = Path(schema_source + json_file.parent.name).resolve()
         path_text_pairs = list()
         csv_list = list()
+        in_dir = Path(schema_source + json_file.parent.name).resolve()
         base_dir = out_dir / json_file.parent.name
         txt_dir = base_dir / "confidence"
         tab_dir = base_dir / "tables"
@@ -78,28 +78,20 @@ def _create_md_tables(csv_list, tab_dir):
 ################################################################################
 # PHASE ONE
 ################################################################################
-def _md_conversion(path_text_pairs, output_file_md):
+def _md_conversion(path_text_pairs, md_out):
     headings = ["Title"]
     paragraphs = ["P", "LBody", "ParagraphSpan", "Span", "StyleSpan"]
     lists = ["L"]
     table_headers = ["Table"]
-    table_rows = ["TR"]
-    table_data = ["TD"]
-    unwanted = ["Aside"]
     phase_one = []
 
     for i in range(0, 101):
         headings.append(f"H{i}")
         paragraphs.append(f"P[{i}]")
         lists.append(f"LI[{i}]")
-        # table_headers.append(f"TH[{i}]")
         table_headers.append(f"Table[{i}]")
-        table_rows.append(f"TR[{i}]")
-        table_data.append(f"TD[{i}]")
-    # tr_val = None
     for (path, text) in path_text_pairs:
         split_path_list = path.split("/")
-        # print(split_path_list)
         for item in split_path_list:
             if item in headings:
                 temp_tuple = f"\n## {text}\n"
@@ -123,16 +115,21 @@ def _md_conversion(path_text_pairs, output_file_md):
                 temp_tuple = f"\n{item} GOESHEREGOESHEREGOESHEREGOESHERE\n"
                 phase_one.append(temp_tuple)
                 break
-    _processing(phase_one, output_file_md)
+    _processing(phase_one, md_out)
     
-
-def _processing(phase_one,output_file_md):
-    ############################################################################
-    ############################################################################
+def _processing(phase_one, md_out):
+################################################################################
+# Variables.
+################################################################################
     phase_two = []
-    md_dir = Path(output_file_md).parent
+    phase_three = []
+    phase_four = []
+    md_dir = Path(md_out).parent
     md_files = list(md_dir.rglob("fileoutpart*.md"))
-    temp_file = Path(output_file_md).with_name("TEMP.md")
+    temp_file = Path(md_out).with_name("TEMP.md")
+################################################################################
+# Remove duplicate lines.
+################################################################################
     with open(temp_file, "a") as stream:
         stream.writelines(phase_one)
     with open(temp_file, "r") as stream:
@@ -143,9 +140,9 @@ def _processing(phase_one,output_file_md):
             phase_two.append(line)
     with open(temp_file, "w") as stream:
         stream.writelines("".join(phase_two))
-    ############################################################################
-    ############################################################################
-    phase_three = []
+################################################################################
+# Applying extra whitespace.
+################################################################################
     with open(temp_file, "r") as stream:
         whitespace_lines = stream.readlines()
     for line in whitespace_lines:        
@@ -156,9 +153,9 @@ def _processing(phase_one,output_file_md):
             phase_three.append(line)
     with open(temp_file, "w") as stream:
         stream.writelines("".join(phase_three))
-    ############################################################################
-    ############################################################################
-    phase_four = []
+################################################################################
+# Replacing table entries with the relevant converted table.
+################################################################################
     with open(temp_file, "r") as stream:
         table_lines = stream.readlines()
     for line in table_lines:        
@@ -172,10 +169,11 @@ def _processing(phase_one,output_file_md):
             continue
         else:
             phase_four.append(line)
-    with open(output_file_md, "w") as stream:
+################################################################################
+# Create final file.
+################################################################################
+    with open(md_out, "w") as stream:
         stream.writelines("".join(phase_four))
-    ############################################################################
-    ############################################################################
 
 def split_all_pages_into_image(input_path, format):
     """
