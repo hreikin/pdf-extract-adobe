@@ -1,6 +1,6 @@
 import utilities
 
-import logging
+import logging, json
 
 from pathlib import Path
 
@@ -76,3 +76,22 @@ def _create_adobe_request(source_file):
         logging.exception(f"Exception encountered while executing operation on '{source_file}'.")
         logging.info(f"Retrying operation on '{source_file}'.")
         _create_adobe_request(source_file)
+
+def create_pdf_url_list():
+    out_path = Path("../test/").resolve()
+    out_file = out_path / "pdf-urls.txt"
+    with open("pdf-urls.jl") as stream:
+        pdf_url_file = stream.readlines()
+    pdf_url_dict = {}
+    count = 0
+    for line in pdf_url_file:
+        json_line = json.loads(line)
+        # print(json_line)
+        for k, v in json_line.items():
+            if k == "original_filename":
+                pdf_url_dict[v] = str(json_line["page"])
+    for k, v in pdf_url_dict.items():
+        with open(out_file, "a") as stream:
+            stream.write(k + "\n")
+            stream.write(v + "\n")
+            stream.write("\n")
