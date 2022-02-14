@@ -4,11 +4,12 @@
 - Place `Adobe PDF Extract API` credentials in root of repository.
 - Install `Python Imaging Library` (or the `Pillow fork`) for your OS
 - Install `Tesseract OCR` for your OS.
+- Install `wxGTK-devel` for your OS (Linux only)
 
 ```
 python3 -m venv .venv
 source .venv/bin/activate
-pip install scrapy pdfservices-sdk pytesseract pypdf2 pymupdf
+pip install scrapy pdfservices-sdk pytesseract pypdf2 pymupdf wxwidgets pandas tabulate
 ```
 
 ## Known Issue & Workaround
