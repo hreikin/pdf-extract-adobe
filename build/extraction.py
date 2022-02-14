@@ -6,91 +6,69 @@ from pathlib import Path
 from PIL import Image
 
 def target_element_in_json(schema_source, target_element):
-    """
-    Recursively finds all JSON files within a given source directory before 
-    individually extracting the JSON files content into a dictionary.
-    
-    The sub function "_iterate_through_nested_dicts()" is called on every 
-    dictionary individually passing it a constructed filepath as the output file.
-
-    :param schema_source: A directory containing JSON files.
-    :param output_path: Location to create output files.
-    """
     json_file_list = Path(schema_source).rglob("*.json")
-    output_path = Path(schema_source).with_stem("extracted-content")
+    out_dir = Path(schema_source).with_stem("extracted-content").resolve()
+    logging.info("Extracting JSON content.")
     for json_file in json_file_list:
-        txt_output_dir = output_path / json_file.parent.name
-        txt_output_dir.mkdir(parents=True, exist_ok=True)
-        txt_output = txt_output_dir / str(txt_output_dir.name + "-EXTRACTED-JSON.txt")
-        md_output = txt_output_dir / str(txt_output_dir.name + ".md")
+        in_dir = Path(schema_source + json_file.parent.name).resolve()
+        path_text_pairs = list()
+        csv_list = list()
+        base_dir = out_dir / json_file.parent.name
+        txt_dir = base_dir / "confidence"
+        tab_dir = base_dir / "tables"
+        txt_dir.mkdir(parents=True, exist_ok=True)
+        json_txt = txt_dir / str(base_dir.name + "-EXTRACTED-JSON.txt")
+        md_out = base_dir / str(txt_dir.parent.name + ".md")
         with json_file.open() as stream:
-            extracted_json = json.loads(stream.read())
+            json_dict = json.loads(stream.read())
         logging.info(f"Targeting '{target_element}' elements within '{json_file.resolve()}'.")
-        
-        _iterate_through_nested_dicts(extracted_json, txt_output, md_output, target_element)
-        logging.info(f"Extracting text, converting tables and processing output.")
-        logging.info(f"Creating '{txt_output.resolve()}'.")
-        logging.info(f"Creating '{md_output.resolve()}'.")
+        _iterate_through_nested_dicts(json_dict, target_element, json_txt, path_text_pairs, csv_list, in_dir)
+        if len(csv_list) > 0:
+            tab_dir.mkdir(parents=True, exist_ok=True)
+            logging.info("Converting found tables.")
+            _create_md_tables(csv_list, tab_dir)
+        logging.info(f"Creating '{md_out}'.")
+        _md_conversion(path_text_pairs, md_out)
+    logging.info("Cleaning up temp files.")
+    temp_files = out_dir.rglob("TEMP.md")
+    for item in temp_files:
+        Path(item).unlink()
 
-def _iterate_through_nested_dicts(nested_dict, output_file_txt, output_file_md, target_element):
-    """
-    Recursively iterates through a dictionary and targets all "Text" keys and 
-    their values to write to an output file.
-
-    This sub function is called on the JSON files which are found by the function 
-    "extract_text_from_json()".
-
-    :param nested_dict: A JSON dictionary.
-    :param output_file: File to output targeted values to.
-    """
+def _iterate_through_nested_dicts(nested_dict, target_element, txt_out, path_text_pairs, csv_list, in_dir):
     keys_list = list(nested_dict.keys())
     values_list = list(nested_dict.values())
-    path_text_pairs = list()
-    csv_list = list()
     for key,value in nested_dict.items():
         if key == "filePaths":
             for file in value:
                 if str(file).endswith(".csv"):
-                    csv_list.append(file)
-
+                    csv_list.append(in_dir / file)
         if key == target_element:
             text_index = keys_list.index(key)
             path_index = keys_list.index("Path")
             temp_tuple = (values_list[path_index], values_list[text_index])
             path_text_pairs.append(temp_tuple)
-            with open(output_file_txt, "a") as stream:
+            with open(txt_out, "a") as stream:
                 stream.write(str(values_list[text_index]) + "\n")               # Swap with below after testing.
                 # stream.write(str(keys_list[path_index]) + " : " + str(values_list[path_index]) + "\n")
                 # stream.write(str(keys_list[text_index]) + " : " + str(values_list[text_index]) + "\n\n")
         elif isinstance(value, dict):
-            _iterate_through_nested_dicts(value, output_file_txt, output_file_md, target_element)
+            _iterate_through_nested_dicts(value, target_element, txt_out, path_text_pairs, csv_list, in_dir)
         elif isinstance(value, list):
             for item in value:
                 if isinstance(item, dict):
-                    _iterate_through_nested_dicts(item, output_file_txt, output_file_md, target_element)
+                    _iterate_through_nested_dicts(item, target_element, txt_out, path_text_pairs, csv_list, in_dir)
                 elif isinstance(value, list):
                     for item in value:
                         if isinstance(item, dict):
-                            _iterate_through_nested_dicts(item, output_file_txt, output_file_md, target_element)
-    _create_md_tables(csv_list, output_file_txt)
-    _phase_one(path_text_pairs, output_file_md)
+                            _iterate_through_nested_dicts(item, target_element, txt_out, path_text_pairs, csv_list, in_dir)
+    return csv_list, path_text_pairs
 
-def _create_md_tables(csv_list, output_file_txt):
+def _create_md_tables(csv_list, tab_dir):
     for csv_file in csv_list:
-        # print(csv_file)
-        # print(output_file_txt)
-        # txt_path = Path(output_file_txt)
-        split_file_path = str(csv_file).rsplit("/")
-        for item in split_file_path:
-            if item.endswith(".csv"):
-                csv_name = item
-        output_dir = Path(output_file_txt).parent
-        output_dir.mkdir(parents=True, exist_ok=True)
-        csv_output = output_dir / csv_name.replace(".csv", ".md")
-        input_dir = str(output_dir).replace("extracted-content", "json-schema")
-        input_path = Path(input_dir + "/" + csv_file)
-        df = pd.read_csv(input_path, engine="python")
-        with open(csv_output, "w") as stream:
+        tab_name = Path(csv_file).with_suffix(".md").name
+        md_out = tab_dir / tab_name
+        df = pd.read_csv(csv_file, engine="python")
+        with open(md_out, "w") as stream:
             df.fillna("", inplace=True)
             df.to_markdown(buf=stream, tablefmt="github")
 
@@ -100,7 +78,7 @@ def _create_md_tables(csv_list, output_file_txt):
 ################################################################################
 # PHASE ONE
 ################################################################################
-def _phase_one(path_text_pairs, output_file_md):
+def _md_conversion(path_text_pairs, output_file_md):
     headings = ["Title"]
     paragraphs = ["P", "LBody", "ParagraphSpan", "Span", "StyleSpan"]
     lists = ["L"]
@@ -145,10 +123,10 @@ def _phase_one(path_text_pairs, output_file_md):
                 temp_tuple = f"\n{item} GOESHEREGOESHEREGOESHEREGOESHERE\n"
                 phase_one.append(temp_tuple)
                 break
-    _phase_two_three_four(phase_one, output_file_md)
+    _processing(phase_one, output_file_md)
     
 
-def _phase_two_three_four(phase_one,output_file_md):
+def _processing(phase_one,output_file_md):
     ############################################################################
     ############################################################################
     phase_two = []
@@ -244,7 +222,7 @@ def ocr_images_for_text(input_path, format):
                 images_file_list = sorted(Path(directory).rglob(f"*{format}"))
                 for item in images_file_list:
                     split_name = item.name.split("_page_")
-                    txt_file_dir = f"{input_path}/{split_name[0]}"
+                    txt_file_dir = f"{input_path}/{split_name[0]}/confidence"
                     txt_file_path = f"{txt_file_dir}/{split_name[0]}-IMAGE-OCR.txt"
                     Path(txt_file_dir).mkdir(parents=True, exist_ok=True)
                     logging.debug(f"Performing OCR on '{item.resolve()}'.")
