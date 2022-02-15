@@ -44,6 +44,7 @@ adobe_json.create_pdf_url_list()
 # file and then targets "Text", "filePaths", "Path" and "Page" values from 
 # within the "elements.json" file and inserts it into an SQLite DB.
 src = "../test/json-schema/"
+logging.info("Manipulating Json and creating SQLite tables.")
 json_to_sqlite.split_main_json_file(src)
 
 # Targets "Text" entries from the Json Schema and adds them to a file for each pdf.
