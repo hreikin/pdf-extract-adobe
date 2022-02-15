@@ -59,13 +59,19 @@ def _create_adobe_request(source_file):
         # Set operation input from a source file.
         source = FileRef.create_from_local_file(source_file)
         extract_pdf_operation.set_input(source)
-        # Build ExtractPDF options and set them into the operation
+        # Build ExtractPDF options and set them into the operation, an example 
+        # with all options is below.
+        # extract_pdf_options: ExtractPDFOptions = ExtractPDFOptions.builder() \
+        #     .with_elements_to_extract([ExtractElementType.TEXT, ExtractElementType.TABLES]) \
+        #     .with_get_char_info(True) \
+        #     .with_table_structure_format(TableStructureType.CSV) \
+        #     .with_elements_to_extract_renditions([ExtractRenditionsElementType.FIGURES, ExtractRenditionsElementType.TABLES]) \
+        #     .with_include_styling_info(True) \
+        #     .build()
         extract_pdf_options: ExtractPDFOptions = ExtractPDFOptions.builder() \
             .with_elements_to_extract([ExtractElementType.TEXT, ExtractElementType.TABLES]) \
-            .with_get_char_info(True) \
             .with_table_structure_format(TableStructureType.CSV) \
             .with_elements_to_extract_renditions([ExtractRenditionsElementType.FIGURES, ExtractRenditionsElementType.TABLES]) \
-            .with_include_styling_info(True) \
             .build()
         extract_pdf_operation.set_options(extract_pdf_options)
         # Execute the operation.
