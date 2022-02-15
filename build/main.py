@@ -42,9 +42,8 @@ adobe_json.create_pdf_url_list()
 
 # Targets "Text" entries from the Json Schema and adds them to a file for each pdf.
 schema_source = "../test/json-schema/"
-target_element = "Text"
 logging.info("Targeting 'Text' entries from the JSON Schema.")
-extraction.target_element_in_json(schema_source, target_element)
+extraction.target_element_in_json(schema_source)
 
 # pdf_path = "../test/pdfs/"
 # extraction.pandoc_pdf_to_md(pdf_path)
