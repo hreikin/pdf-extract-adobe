@@ -1,4 +1,4 @@
-import adobe_json, confidence, extraction, processing
+import adobe_json, confidence, extraction, processing, json_to_sqlite, utilities
 import logging
 
 ##################################### LOGS #####################################
@@ -39,6 +39,12 @@ adobe_json.extract_pdf_adobe(source_path)
 # Creates list of PDF/URL pairs.
 logging.info("Creating PDF/URL list.")
 adobe_json.create_pdf_url_list()
+
+# Splits the main Json Schema file into parts based on the top-level keys in the 
+# file and then targets "Text", "filePaths", "Path" and "Page" values from 
+# within the "elements.json" file and inserts it into an SQLite DB.
+src = "../test/json-schema/"
+json_to_sqlite.split_main_json_file(src)
 
 # Targets "Text" entries from the Json Schema and adds them to a file for each pdf.
 schema_source = "../test/json-schema/"
