@@ -1,3 +1,4 @@
+import constants
 import json
 import os
 
@@ -24,20 +25,9 @@ def _split_elements_json(src):
     processing = list()
     elements = Path(src).resolve() / "elements.json"
     new_elements = elements.with_name(elements.parent.parent.name + ".json").resolve()
-    headings = ["Title"]
-    paragraphs = ["P", "LBody", "ParagraphSpan", "Span", "StyleSpan"]
-    lists = ["L"]
-    table_rows = ["TR"]
-    figures = ["Figure", "Table"]
-    for i in range(0, 101):
-        headings.append(f"H{i}")
-        paragraphs.append(f"P[{i}]")
-        lists.append(f"LI[{i}]")
-        table_rows.append(f"TR[{i}]")
-        figures.append(f"Table[{i}]")
-        figures.append(f"Figure[{i}]")
     with open(elements, "r")as stream:
         json_file = json.load(stream)
+    element_id = 0
     for sub_dict in json_file:
         keys_list = list(sub_dict.keys())
         values_list = list(sub_dict.values())
@@ -46,48 +36,66 @@ def _split_elements_json(src):
                 filepath_index = keys_list.index(key)
                 path_index = keys_list.index("Path")
                 page_index = keys_list.index("Page")
-                temp_dict = {
-                    "Text" : "null",
-                    keys_list[filepath_index] : values_list[filepath_index][0],
-                    keys_list[path_index] : values_list[path_index], 
-                    keys_list[page_index] : values_list[page_index],
-                    }
+                if len(values_list[filepath_index]) > 1:
+                    temp_dict = {
+                        "Text" : "N/A",
+                        "Image Path" : values_list[filepath_index][-1],
+                        "Table Path" : values_list[filepath_index][0],
+                        "Path" : values_list[path_index],
+                        "Element Type" : values_list[path_index],
+                        "Element ID" : element_id,
+                        "Page Num" : values_list[page_index],
+                        }
+                else:
+                    temp_dict = {
+                        "Text" : "N/A",
+                        "Image Path" : values_list[filepath_index][0],
+                        "Table Path" : "N/A",
+                        "Path" : values_list[path_index],
+                        "Element Type" : values_list[path_index],
+                        "Element ID" : element_id,
+                        "Page Num" : values_list[page_index],
+                        }
                 processing.append(temp_dict)
+                element_id += 1
             elif key == "Text":
                 text_index = keys_list.index(key)
                 path_index = keys_list.index("Path")
                 page_index = keys_list.index("Page")
                 temp_dict = {
-                    keys_list[text_index] : values_list[text_index], 
-                    "filePaths" : "null",
-                    keys_list[path_index] : values_list[path_index], 
-                    keys_list[page_index] : values_list[page_index],
+                    "Text" : values_list[text_index], 
+                    "Image Path" : "N/A",
+                    "Table Path" : "N/A",
+                    "Path" : values_list[path_index],
+                    "Element Type" : values_list[path_index], 
+                    "Element ID" : element_id,
+                    "Page Num" : values_list[page_index],
                     }
                 processing.append(temp_dict)
+                element_id += 1
     final = []
     for dictionary in processing:
         temp_dict = dictionary
-        split_path = str(dictionary["Path"]).lstrip("//").split("/")
-        # print(split_path)
+        split_path = str(dictionary["Element Type"]).lstrip("//").split("/")
         for item in split_path:
-            if split_path[-1] in figures:
-                temp_dict["Path"] = split_path[-1]
+            if split_path[-1] in constants.figures:
+                temp_dict["Element Type"] = split_path[-1]
                 final.append(temp_dict)
                 break
-            if item in headings:
-                temp_dict["Path"] = item
+            if item in constants.headings:
+                temp_dict["Element Type"] = item
                 final.append(temp_dict)
                 break
-            if item in lists:
-                temp_dict["Path"] = item
+            if item in constants.lists:
+                temp_dict["Element Type"] = item
                 final.append(temp_dict)
                 break
-            if item in paragraphs:
-                temp_dict["Path"] = item
+            if item in constants.paragraphs:
+                temp_dict["Element Type"] = item
                 final.append(temp_dict)
                 break
-            if item in table_rows:
-                temp_dict["Path"] = item
+            if item in constants.table_rows:
+                temp_dict["Element Type"] = item
                 final.append(temp_dict)
                 break
     with open(new_elements, "w") as stream:
