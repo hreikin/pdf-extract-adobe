@@ -19,7 +19,7 @@ available in other file formats.
 ```
 python3 -m venv .venv
 source .venv/bin/activate
-pip install scrapy pdfservices-sdk pytesseract pypdf2 pymupdf wxwidgets pandas tabulate
+pip install scrapy pdfservices-sdk pytesseract pypdf2 pymupdf sqlitebiter wxwidgets pandas tabulate
 ```
 
 ## Known Issue & Workaround
