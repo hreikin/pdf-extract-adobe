@@ -1,4 +1,4 @@
-import adobe_json, confidence, extraction, processing, json_to_sqlite, utilities
+import adobe_json, confidence, extraction, processing, json_to_sqlite, utilities, create
 import logging
 
 ##################################### LOGS #####################################
@@ -46,6 +46,21 @@ adobe_json.create_pdf_url_list()
 src = "../test/json-schema/"
 logging.info("Manipulating Json and creating SQLite tables.")
 json_to_sqlite.split_main_json_file(src)
+
+# Takes data from SQLite DB and applies markdown formatting to it before writing 
+# to a file. The PDF name needs converting to the below format for selecting the 
+# DB table by name, this should be done inside the function before making the 
+# query.
+path = "../test/json-schema/Beam-Profile-Measuring-System/"
+create.create_markdown(path)
+path = "../test/json-schema/Daresbury_labs_CS.1/"
+create.create_markdown(path)
+path = "../test/json-schema/Sputtering-Targets/"
+create.create_markdown(path)
+path = "../test/json-schema/Starter-Kit-Princeton-Scientific/"
+create.create_markdown(path)
+path = "../test/json-schema/WS22/"
+create.create_markdown(path)
 
 # Targets "Text" entries from the Json Schema and adds them to a file for each pdf.
 schema_source = "../test/json-schema/"
