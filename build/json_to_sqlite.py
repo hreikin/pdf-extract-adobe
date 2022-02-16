@@ -103,7 +103,7 @@ def _split_elements_json(src):
 
 def _sqlitebiter_import_json(src):
     all_files = Path(src).rglob("*.json")
-    db_out = Path(src).parent.parent.parent.resolve() / "sqlite" / "pcc.sqlite"
+    db_out = Path(constants.database).resolve()
     db_out.parent.mkdir(parents=True, exist_ok=True)
     for file in all_files:
         if file.name == str(Path(src).parent.name + ".json"):

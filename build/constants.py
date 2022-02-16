@@ -1,3 +1,4 @@
+database = "../test/sqlite/pcc.sqlite"
 headings = ["Title"]
 paragraphs = ["P", "LBody", "ParagraphSpan", "Span", "StyleSpan"]
 lists = ["L"]
