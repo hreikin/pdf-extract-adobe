@@ -1,3 +1,7 @@
+from pathlib import Path
+# src_dir = Path("../src/").resolve()
+src_dir = Path("../test/").resolve()
+base_dir = Path("..").resolve()
 database = "../test/sqlite/pcc.sqlite"
 headings = ["Title"]
 paragraphs = ["P", "LBody", "ParagraphSpan", "Span", "StyleSpan"]
@@ -11,3 +15,5 @@ for i in range(0, 101):
     table_rows.append(f"TR[{i}]")
     figures.append(f"Table[{i}]")
     figures.append(f"Figure[{i}]")
+
+unwanted_pdf = ["*", "◈", "-", "•", "* ", "◈ ", "- ", "• "]
