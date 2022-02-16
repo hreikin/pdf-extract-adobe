@@ -59,6 +59,8 @@ def _split_elements_json(src):
                 processing.append(temp_dict)
                 element_id += 1
             elif key == "Text":
+                if sub_dict[key] in constants.unwanted_pdf[::]:
+                    break
                 text_index = keys_list.index(key)
                 path_index = keys_list.index("Path")
                 page_index = keys_list.index("Page")
