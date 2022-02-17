@@ -1,4 +1,4 @@
-import adobe_json, confidence, extraction, processing, json_to_sqlite, utilities, create
+import adobe_json, confidence, extraction, processing, json_to_sqlite, utilities, convert
 import logging
 
 ##################################### LOGS #####################################
@@ -32,7 +32,7 @@ adobe_json.extract_pdf_adobe(source_path)
 
 # # Extracts Json Schema from zip file. Automatically called after the API 
 # # requests are complete. Can be used on its own.
-# zip_source = "../test/json-zips/"
+# zip_source = "../test/zips/"
 # logging.info("Extracting JSON Schema from zip files.")
 # utilities.extract_from_zip(zip_source)
 
@@ -43,60 +43,47 @@ adobe_json.create_pdf_url_list()
 # Splits the main Json Schema file into parts based on the top-level keys in the 
 # file and then targets "Text", "filePaths", "Path" and "Page" values from 
 # within the "elements.json" file and inserts it into an SQLite DB.
-src = "../test/json-schema/"
+src = "../test/json/"
 logging.info("Manipulating Json and creating SQLite tables.")
 json_to_sqlite.split_main_json_file(src)
 
 # Takes data from SQLite DB and applies markdown formatting to it before writing 
-# to a file. The PDF name needs converting to the below format for selecting the 
-# DB table by name, this should be done inside the function before making the 
-# query.
-path = "../test/json-schema/Beam-Profile-Measuring-System/"
-create.create_markdown(path)
-path = "../test/json-schema/Daresbury_labs_CS.1/"
-create.create_markdown(path)
-path = "../test/json-schema/Sputtering-Targets/"
-create.create_markdown(path)
-path = "../test/json-schema/Starter-Kit-Princeton-Scientific/"
-create.create_markdown(path)
-path = "../test/json-schema/WS22/"
-create.create_markdown(path)
-
-# Targets "Text" entries from the Json Schema and adds them to a file for each pdf.
-schema_source = "../test/json-schema/"
-logging.info("Targeting 'Text' entries from the JSON Schema.")
-extraction.target_element_in_json(schema_source)
-
-# pdf_path = "../test/pdfs/"
-# extraction.pandoc_pdf_to_md(pdf_path)
-# markdown_path = "../test/extracted-content/"
-# extraction.post_process_markdown(markdown_path)
+# to a file.
+path = "../test/json/Beam-Profile-Measuring-System/"
+convert.convert_db_markdown(path)
+path = "../test/json/Daresbury_labs_CS.1/"
+convert.convert_db_markdown(path, with_imgs=False)
+path = "../test/json/Sputtering-Targets/"
+convert.convert_db_markdown(path)
+path = "../test/json/Starter-Kit-Princeton-Scientific/"
+convert.convert_db_markdown(path)
+path = "../test/json/WS22/"
+convert.convert_db_markdown(path)
 
 # Convert PDF files to images for OCR/accuracy check.
 pdf_path = "../test/pdfs/"
 image_format = ".png"
 logging.info("Converting PDF files to images.")
-extraction.split_all_pages_into_image(pdf_path, image_format)
+extraction.convert_pages_into_image(pdf_path, image_format)
 
 # Run the converted pdf images through OCR and create a text file for each one as output.
-input_path = "../test/extracted-content/"
-image_format = ".png"
+input_path = "../test/converted/"
 logging.info("Running the converted images through OCR.")
-extraction.ocr_images_for_text(input_path, image_format)
+extraction.ocr_images_for_text_confidence(input_path)
+
+# Extract text from PDF with PyMuPDF.
+pdf_path = "../test/pdfs/"
+extraction.extract_text_from_pdf_confidence(pdf_path)
 
 # Confidence Check
-input_path = "../test/extracted-content/"
+input_path = "../test/confidence/"
 logging.info("Performing basic confidence check.")
 confidence.confidence_check_text(input_path)
+
+# Extract images from PDF
+pdf_path = "../test/pdfs/"
+extraction.extract_images_from_pdf(pdf_path)
 logging.info("Process complete, exiting.")
-
-# # Extract text from PDF
-# pdf_path = "../test/pdfs/"
-# extraction.extract_text_from_pdf(pdf_path)
-
-# # Extract images from PDF
-# pdf_path = "../test/pdfs/"
-# extraction.extract_images_from_pdf(pdf_path)
 
 # # Split all PDF pages
 # pdf_file = "../test/pdfs/Daresbury_labs_CS.1.pdf"
