@@ -12,7 +12,7 @@ def split_main_json_file(src):
             with open(file, "r") as stream:
                 full_dict = json.load(stream)
             for key, val in full_dict.items():
-                filename = file.parent.resolve() / "split-json" / str(key + ".json")
+                filename = directory.resolve() / "split-json" / f"{key}.json"
                 filename.parent.mkdir(parents=True, exist_ok=True)
                 with open(filename, 'w') as stream:
                     # Save each obj to their respective filepath
@@ -22,10 +22,11 @@ def split_main_json_file(src):
             _sqlitebiter_import_json(filename.parent.resolve())
 
 def _split_elements_json(src):
+    src = Path(src).resolve()
     processing = list()
-    elements = Path(src).resolve() / "elements.json"
-    new_elements = elements.with_name(elements.parent.parent.name + ".json").resolve()
-    with open(elements, "r")as stream:
+    elements_json = src / "elements.json"
+    new_elements = elements_json.with_name(src.parent.name + ".json")
+    with open(elements_json, "r")as stream:
         json_file = json.load(stream)
     element_id = 0
     for sub_dict in json_file:
@@ -39,8 +40,8 @@ def _split_elements_json(src):
                 if len(values_list[filepath_index]) > 1:
                     temp_dict = {
                         "Text" : "N/A",
-                        "Image Path" : values_list[filepath_index][-1],
-                        "Table Path" : values_list[filepath_index][0],
+                        "Image Path" : f"{src.parent.resolve()}/{values_list[filepath_index][-1]}",
+                        "Table Path" : f"{src.parent.resolve()}/{values_list[filepath_index][0]}",
                         "Path" : values_list[path_index],
                         "Element Type" : values_list[path_index],
                         "Element ID" : element_id,
@@ -49,7 +50,7 @@ def _split_elements_json(src):
                 else:
                     temp_dict = {
                         "Text" : "N/A",
-                        "Image Path" : values_list[filepath_index][0],
+                        "Image Path" : f"{src.parent.resolve()}/{values_list[filepath_index][0]}",
                         "Table Path" : "N/A",
                         "Path" : values_list[path_index],
                         "Element Type" : values_list[path_index],
@@ -75,6 +76,10 @@ def _split_elements_json(src):
                     }
                 processing.append(temp_dict)
                 element_id += 1
+                txt_out = constants.confidence_dir / src.parent.name / f"{src.parent.name}-JSON-TXT.txt"
+                txt_out.parent.mkdir(parents=True, exist_ok=True)
+                with open(txt_out, "a") as stream:
+                    stream.write(str(values_list[text_index]) + "\n")
     final = []
     for dictionary in processing:
         temp_dict = dictionary
@@ -108,7 +113,7 @@ def _sqlitebiter_import_json(src):
     db_out = Path(constants.database).resolve()
     db_out.parent.mkdir(parents=True, exist_ok=True)
     for file in all_files:
-        if file.name == str(Path(src).parent.name + ".json"):
+        if file.name == f"{Path(src).parent.name}.json":
             os.system(f"sqlitebiter -a -o {db_out} file {file}")
 
 # src = "../test/json-schema/"
