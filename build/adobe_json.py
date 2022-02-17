@@ -1,4 +1,4 @@
-import utilities, json_to_sqlite
+import utilities, json_to_sqlite, constants
 
 import logging, json
 
@@ -22,7 +22,7 @@ def extract_pdf_adobe(source_path):
 
     :param source_path: A directory containing PDF files.
     """
-    zip_path = Path(source_path).with_stem("json-zips")
+    zip_path = constants.zip_dir
     pdf_file_list = sorted(Path(source_path).rglob("*.pdf"))
     pdf_amount = len(pdf_file_list)
     logging.info(f"Found {pdf_amount} PDF files, creating individual API requests.")
@@ -32,7 +32,7 @@ def extract_pdf_adobe(source_path):
     utilities.extract_from_zip(zip_path)
     # Leave the below commented out while testing using the "main.py" file.
     # logging.info("Manipulating Json and creating SQLite tables.")
-    # json_to_sqlite.split_main_json_file(zip_path.resolve().with_stem("json-schema"))
+    json_to_sqlite.split_main_json_file(constants.json_dir)
 
 def _create_adobe_request(source_file):
     """
@@ -47,12 +47,11 @@ def _create_adobe_request(source_file):
     """
     try:
         # get base path.
-        base_path = Path("..").resolve()
         source_file = Path(source_file).resolve()
         pdf_name = source_file.stem
         # Initial setup, create credentials instance.
         credentials = Credentials.service_account_credentials_builder() \
-            .from_file(base_path / "pdfservices-api-credentials.json") \
+            .from_file(constants.base_dir / "pdfservices-api-credentials.json") \
             .build()
         # Create client config instance with custom time-outs.
         client_config = ClientConfig.builder().with_connect_timeout(10000).with_read_timeout(40000).build()
@@ -80,14 +79,14 @@ def _create_adobe_request(source_file):
         # Execute the operation.
         result: FileRef = extract_pdf_operation.execute(execution_context)
         # Save the result to the specified location.
-        result.save_as(base_path / f"test/json-zips/{pdf_name}.zip")
+        result.save_as(constants.zip_dir / f"{pdf_name}.zip")
     except (ServiceApiException, ServiceUsageException, SdkException):
         logging.exception(f"Exception encountered while executing operation on '{source_file}'.")
         logging.info(f"Retrying operation on '{source_file}'.")
         _create_adobe_request(source_file)
 
 def create_pdf_url_list():
-    out_path = Path("../test/").resolve()
+    out_path = Path(constants.src_dir).resolve()
     out_file = out_path / "pdf-urls.txt"
     with open("pdf-urls.jl") as stream:
         pdf_url_file = stream.readlines()
