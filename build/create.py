@@ -1,11 +1,12 @@
 import constants
 import logging, sqlite3
+import pandas as pd
 from pathlib import Path
 
-def create_markdown(src_json_dir):
-    src_json_dir = Path(src_json_dir).resolve()
-    name = src_json_dir.name
-    new_name = name.replace("-", "_").replace(".", "_")
+def convert_db_markdown(original_src, with_imgs=True):
+    original_src = Path(original_src).resolve()
+    name = original_src.name
+    new_name = name.replace("-", "_").replace(".", "_").replace("*", "_")
     query = f"SELECT `Element ID`, `Element Type`, `Image Path`, `Table Path`, Text FROM {new_name};"
     con = sqlite3.connect(constants.database)
     cursor = con.cursor()
@@ -28,17 +29,21 @@ def create_markdown(src_json_dir):
             temp_list = db_info
             img_path = db_info[2]
             csv_path = db_info[3]
-            temp_list[-1] = f"![Table]({constants.src_dir}/json-schema/{name}/{csv_path})\n![Image]({constants.src_dir}/json-schema/{name}/{img_path})\n\n"
+            tab_path = Path(csv_path).with_suffix(".md")
+            _convert_csv_md_tables(csv_path, tab_path)
+            with open(tab_path, "r") as stream:
+                tab_string = stream.read()
+            temp_list[-1] = f"{tab_string}\n\n"
             formatted.append(temp_list)
-        elif db_info[1] in constants.figures and str(db_info[2]).endswith(".png"):
+        elif db_info[1] in constants.figures and str(db_info[2]).endswith(".png") and with_imgs == True:
             temp_list = db_info
             path = db_info[2]
-            temp_list[-1] = f"![Image]({constants.src_dir}/json-schema/{name}/{path})\n\n"
+            temp_list[-1] = f"![Image]({path})\n\n"
             formatted.append(temp_list)
         elif db_info[1] in constants.table_rows:
             pass
     final = formatted
-    out = constants.src_dir / f"converted/md/{new_name}.md"
+    out = constants.converted_dir / f"markdown/{new_name}.md"
     out.parent.mkdir(parents=True, exist_ok=True)
     with open(out, "w") as stream:
         for item in final:
@@ -66,3 +71,13 @@ def create_markdown(src_json_dir):
                 stream.writelines(item[-1])
             else:
                 stream.writelines(item[-1])
+
+
+def _convert_csv_md_tables(csv_file, tab_path):
+    """
+    Converts found ".csv" tables into Github markdown formatting using Pandas.
+    """
+    df = pd.read_csv(csv_file, engine="python")
+    with open(tab_path, "w") as stream:
+        df.fillna("", inplace=True)
+        df.to_markdown(buf=stream, tablefmt="github")
