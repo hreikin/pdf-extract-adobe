@@ -38,16 +38,16 @@ constants.headings = new_headings
 
 
 
-# # Creates Json Schema zip file with Adobe API.
-# source_path = "../src/pdfs/"
-# logging.info("Creating JSON Schema with Adobe API.")
-# adobe_json.extract_pdf_adobe(source_path)
+# Creates Json Schema zip file with Adobe API.
+source_path = "../src/pdfs/"
+logging.info("Creating JSON Schema with Adobe API.")
+adobe_json.extract_pdf_adobe(source_path)
 
-# Extracts Json Schema from zip file. Automatically called after the API 
-# requests are complete. Can be used on its own.
-zip_source = "../src/zips/"
-logging.info("Extracting JSON Schema from zip files.")
-utilities.extract_from_zip(zip_source)
+# # Extracts Json Schema from zip file. Automatically called after the API 
+# # requests are complete. Can be used on its own.
+# zip_source = "../src/zips/"
+# logging.info("Extracting JSON Schema from zip files.")
+# utilities.extract_from_zip(zip_source)
 
 # Creates list of PDF/URL pairs.
 logging.info("Creating PDF/URL list.")
@@ -63,20 +63,6 @@ json_to_sqlite.split_main_json_file(src)
 src_dir = Path(constants.json_dir).resolve()
 for directory in src_dir.iterdir():
     convert.convert_db_markdown(directory.resolve())
-
-
-# # Takes data from SQLite DB and applies markdown formatting to it before writing 
-# # to a file.
-# path = "../src/json/Beam-Profile-Measuring-System/"
-# convert.convert_db_markdown(path)
-# path = "../src/json/Daresbury_labs_CS.1/"
-# convert.convert_db_markdown(path)
-# path = "../src/json/Sputtering-Targets/"
-# convert.convert_db_markdown(path)
-# path = "../src/json/Starter-Kit-Princeton-Scientific/"
-# convert.convert_db_markdown(path)
-# path = "../src/json/WS22/"
-# convert.convert_db_markdown(path)
 
 # Convert PDF files to images for OCR/accuracy check.
 pdf_path = "../src/pdfs/"
