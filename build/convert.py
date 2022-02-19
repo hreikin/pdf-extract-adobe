@@ -1,3 +1,4 @@
+import shutil
 import constants
 import logging, sqlite3
 import pandas as pd
@@ -14,6 +15,8 @@ def convert_db_markdown(original_src, with_imgs=True):
     query_tuples = cursor.fetchall()
     query_list = [list(row) for row in query_tuples]
     formatted = []
+    out = constants.converted_dir / f"markdown/{new_name}/{new_name}.md"
+    out.parent.mkdir(parents=True, exist_ok=True)
     for db_info in query_list:
         if db_info[1] in constants.headings:
             temp_list = db_info
@@ -37,14 +40,17 @@ def convert_db_markdown(original_src, with_imgs=True):
             formatted.append(temp_list)
         elif db_info[1] in constants.figures and str(db_info[2]).endswith(".png") and with_imgs == True:
             temp_list = db_info
-            path = db_info[2]
-            temp_list[-1] = f"![Image]({path})\n\n"
+            path = Path(db_info[2]).resolve()
+            img_dir = out.parent / "figures"
+            img_out = Path(img_dir / path.name).resolve()
+            img_dir.mkdir(parents=True, exist_ok=True)
+            rel_path = "./" + "figures/" + path.name
+            shutil.copy2(path, img_out)
+            temp_list[-1] = f"![Image]({rel_path})\n\n"
             formatted.append(temp_list)
         elif db_info[1] in constants.table_rows:
             pass
     final = formatted
-    out = constants.converted_dir / f"markdown/{new_name}.md"
-    out.parent.mkdir(parents=True, exist_ok=True)
     with open(out, "w") as stream:
         for item in final:
             cur_index = formatted.index(item)
