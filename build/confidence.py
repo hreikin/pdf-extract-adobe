@@ -46,14 +46,20 @@ def confidence_check_text(input_path):
                 if len(matches_list) > 0:
                     close_matches_a_ocr += 1
                 matches_list = []
-            close_match_ratio_a_ocr = close_matches_a_ocr / len(ocr_list)
+            try:
+                close_match_ratio_a_ocr = close_matches_a_ocr / len(ocr_list)
+            except ZeroDivisionError:
+                close_match_ratio_a_ocr = 0
             close_matches_b_ocr = 0
             for line in ocr_list:
                 matches_list = get_close_matches(line, pymupdf_list, n=1)
                 if len(matches_list) > 0:
                     close_matches_b_ocr += 1
                 matches_list = []
-            close_match_ratio_b_ocr = close_matches_b_ocr / len(ocr_list)
+            try:
+                close_match_ratio_b_ocr = close_matches_b_ocr / len(ocr_list)
+            except ZeroDivisionError:
+                close_match_ratio_b_ocr = 0
 
             close_matches_a_json = 0
             for line in json_list:
@@ -61,14 +67,20 @@ def confidence_check_text(input_path):
                 if len(matches_list) > 0:
                     close_matches_a_json += 1
                 matches_list = []
-            close_match_ratio_a_json = close_matches_a_json / len(json_list)
+            try:
+                close_match_ratio_a_json = close_matches_a_json / len(json_list)
+            except ZeroDivisionError:
+                close_match_ratio_a_json = 0
             close_matches_b_json = 0
             for line in json_list:
                 matches_list = get_close_matches(line, pymupdf_list, n=1)
                 if len(matches_list) > 0:
                     close_matches_b_json += 1
                 matches_list = []
-            close_match_ratio_b_json = close_matches_b_json / len(json_list)
+            try:
+                close_match_ratio_b_json = close_matches_b_json / len(json_list)
+            except ZeroDivisionError:
+                close_match_ratio_b_json = 0
 
             close_matches_a_pymupdf = 0
             for line in pymupdf_list:
@@ -76,14 +88,20 @@ def confidence_check_text(input_path):
                 if len(matches_list) > 0:
                     close_matches_a_pymupdf += 1
                 matches_list = []
-            close_match_ratio_a_pymupdf = close_matches_a_pymupdf / len(pymupdf_list)
+            try:
+                close_match_ratio_a_pymupdf = close_matches_a_pymupdf / len(pymupdf_list)
+            except ZeroDivisionError:
+                close_match_ratio_a_pymupdf = 0
             close_matches_b_pymupdf = 0
             for line in pymupdf_list:
                 matches_list = get_close_matches(line, ocr_list, n=1)
                 if len(matches_list) > 0:
                     close_matches_b_pymupdf += 1
                 matches_list = []
-            close_match_ratio_b_pymupdf = close_matches_b_pymupdf / len(pymupdf_list)
+            try:
+                close_match_ratio_b_pymupdf = close_matches_b_pymupdf / len(pymupdf_list)
+            except ZeroDivisionError:
+                close_match_ratio_b_pymupdf = 0
             ####################################################################
             # Comparison Scores                                                #
             ####################################################################
