@@ -28,58 +28,7 @@ def _split_elements_json(src):
     new_elements = elements_json.with_name(src.parent.name + ".json")
     with open(elements_json, "r")as stream:
         json_file = json.load(stream)
-    element_id = 0
-    for sub_dict in json_file:
-        keys_list = list(sub_dict.keys())
-        values_list = list(sub_dict.values())
-        for key, val in sub_dict.items():
-            if key == "filePaths":
-                filepath_index = keys_list.index(key)
-                path_index = keys_list.index("Path")
-                page_index = keys_list.index("Page")
-                if len(values_list[filepath_index]) > 1:
-                    temp_dict = {
-                        "Text" : "N/A",
-                        "Image Path" : f"{src.parent.resolve()}/{values_list[filepath_index][-1]}",
-                        "Table Path" : f"{src.parent.resolve()}/{values_list[filepath_index][0]}",
-                        "Path" : values_list[path_index],
-                        "Element Type" : values_list[path_index],
-                        "Element ID" : element_id,
-                        "Page Num" : values_list[page_index],
-                        }
-                else:
-                    temp_dict = {
-                        "Text" : "N/A",
-                        "Image Path" : f"{src.parent.resolve()}/{values_list[filepath_index][0]}",
-                        "Table Path" : "N/A",
-                        "Path" : values_list[path_index],
-                        "Element Type" : values_list[path_index],
-                        "Element ID" : element_id,
-                        "Page Num" : values_list[page_index],
-                        }
-                processing.append(temp_dict)
-                element_id += 1
-            elif key == "Text":
-                if sub_dict[key] in constants.unwanted_pdf[::]:
-                    break
-                text_index = keys_list.index(key)
-                path_index = keys_list.index("Path")
-                page_index = keys_list.index("Page")
-                temp_dict = {
-                    "Text" : values_list[text_index], 
-                    "Image Path" : "N/A",
-                    "Table Path" : "N/A",
-                    "Path" : values_list[path_index],
-                    "Element Type" : values_list[path_index], 
-                    "Element ID" : element_id,
-                    "Page Num" : values_list[page_index],
-                    }
-                processing.append(temp_dict)
-                element_id += 1
-                txt_out = constants.confidence_dir / src.parent.name / f"{src.parent.name}-JSON-TXT.txt"
-                txt_out.parent.mkdir(parents=True, exist_ok=True)
-                with open(txt_out, "a") as stream:
-                    stream.write(str(values_list[text_index]) + "\n")
+    _iterate_json(json_file, src, processing)
     final = []
     for dictionary in processing:
         temp_dict = dictionary
@@ -116,5 +65,56 @@ def _sqlitebiter_import_json(src):
         if file.name == f"{Path(src).parent.name}.json":
             os.system(f"sqlitebiter -a -o {db_out} file {file}")
 
+def _iterate_json(json_file,  src, processing):
+    for sub_dict in json_file:
+        keys_list = list(sub_dict.keys())
+        values_list = list(sub_dict.values())
+        for key, val in sub_dict.items():
+            if key == "filePaths":
+                filepath_index = keys_list.index(key)
+                path_index = keys_list.index("Path")
+                page_index = keys_list.index("Page")
+                if len(values_list[filepath_index]) > 1:
+                    temp_dict = {
+                        "Text" : "N/A",
+                        "Image Path" : f"{src.parent.resolve()}/{values_list[filepath_index][-1]}",
+                        "Table Path" : f"{src.parent.resolve()}/{values_list[filepath_index][0]}",
+                        "Path" : values_list[path_index],
+                        "Element Type" : values_list[path_index],
+                        "Page Num" : values_list[page_index],
+                        }
+                else:
+                    temp_dict = {
+                        "Text" : "N/A",
+                        "Image Path" : f"{src.parent.resolve()}/{values_list[filepath_index][0]}",
+                        "Table Path" : "N/A",
+                        "Path" : values_list[path_index],
+                        "Element Type" : values_list[path_index],
+                        "Page Num" : values_list[page_index],
+                        }
+                processing.append(temp_dict)
+            elif key == "Text":
+                if sub_dict[key] in constants.unwanted_pdf[::]:
+                    break
+                text_index = keys_list.index(key)
+                path_index = keys_list.index("Path")
+                page_index = keys_list.index("Page")
+                temp_dict = {
+                    "Text" : values_list[text_index], 
+                    "Image Path" : "N/A",
+                    "Table Path" : "N/A",
+                    "Path" : values_list[path_index],
+                    "Element Type" : values_list[path_index],
+                    "Page Num" : values_list[page_index],
+                    }
+                processing.append(temp_dict)
+                txt_out = constants.confidence_dir / src.parent.name / f"{src.parent.name}-JSON-TXT.txt"
+                txt_out.parent.mkdir(parents=True, exist_ok=True)
+                with open(txt_out, "a") as stream:
+                    stream.write(str(values_list[text_index]) + "\n")
+            elif isinstance(val, list) and isinstance(val[0], dict):
+                _iterate_json(val,  src, processing)
+
+    return processing
 # src = "../test/json-schema/"
 # split_main_json_file(src)
