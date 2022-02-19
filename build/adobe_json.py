@@ -32,7 +32,7 @@ def extract_pdf_adobe(source_path):
     utilities.extract_from_zip(zip_path)
     # Leave the below commented out while testing using the "main.py" file.
     # logging.info("Manipulating Json and creating SQLite tables.")
-    json_to_sqlite.split_main_json_file(constants.json_dir)
+    # json_to_sqlite.split_main_json_file(constants.json_dir)
 
 def _create_adobe_request(source_file):
     """
