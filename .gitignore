@@ -139,11 +139,13 @@ cython_debug/
 *.data
 
 # local folders and files from building/converting
-confidence-check/
-json-schema/
-json-zips/
+confidence/
+converted/
+extracted/
+json/
 pdfs/
+sqlite/
+zips/
 test/
-output/
 pdfservices-api-credentials.json
 private.key
