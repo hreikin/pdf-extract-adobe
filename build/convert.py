@@ -4,11 +4,11 @@ import logging, sqlite3
 import pandas as pd
 from pathlib import Path
 
-def convert_db_markdown(original_src, with_imgs=True):
+def convert_db_markdown(original_src):
     original_src = Path(original_src).resolve()
     name = original_src.name
     new_name = name.replace("-", "_").replace(".", "_").replace("*", "_")
-    query = f"SELECT `Element ID`, `Element Type`, `Image Path`, `Table Path`, Text FROM {new_name};"
+    query = f"SELECT `Element Type`, `Image Path`, `Table Path`, Text FROM {new_name};"
     con = sqlite3.connect(constants.database)
     cursor = con.cursor()
     cursor.execute(query)
@@ -38,7 +38,7 @@ def convert_db_markdown(original_src, with_imgs=True):
                 tab_string = stream.read()
             temp_list[-1] = f"{tab_string}\n\n"
             formatted.append(temp_list)
-        elif db_info[1] in constants.figures and str(db_info[2]).endswith(".png") and with_imgs == True:
+        elif db_info[1] in constants.figures and str(db_info[2]).endswith(".png"):
             temp_list = db_info
             path = Path(db_info[2]).resolve()
             img_dir = out.parent / "figures"
