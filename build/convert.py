@@ -15,7 +15,10 @@ def convert_db_markdown(original_src, with_imgs=True):
     query_tuples = cursor.fetchall()
     query_list = [list(row) for row in query_tuples]
     formatted = []
-    out = constants.converted_dir / f"markdown/{new_name}/{new_name}.md"
+    if with_imgs == True:
+        out = constants.converted_dir / f"markdown/with-images/{new_name}/{new_name}.md"
+    else:
+        out = constants.converted_dir / f"markdown/without-images/{new_name}/{new_name}.md"
     out.parent.mkdir(parents=True, exist_ok=True)
     for db_info in query_list:
         if db_info[0] in constants.headings:
