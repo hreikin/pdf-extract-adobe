@@ -18,29 +18,29 @@ def convert_db_markdown(original_src):
     out = constants.converted_dir / f"markdown/{new_name}/{new_name}.md"
     out.parent.mkdir(parents=True, exist_ok=True)
     for db_info in query_list:
-        if db_info[1] in constants.headings:
+        if db_info[0] in constants.headings:
             temp_list = db_info
             temp_list[-1] = "## " + db_info[-1] + "\n\n"
             formatted.append(temp_list)
-        elif db_info[1] in constants.lists:
+        elif db_info[0] in constants.lists:
             temp_list = db_info
             temp_list[-1] = "- " + db_info[-1] + "\n"
             formatted.append(temp_list)
-        elif db_info[1] in constants.paragraphs:
+        elif db_info[0] in constants.paragraphs:
             formatted.append(db_info)
-        elif db_info[1] in constants.figures and str(db_info[3]).endswith(".csv"):
+        elif db_info[0] in constants.figures and str(db_info[2]).endswith(".csv"):
             temp_list = db_info
-            img_path = db_info[2]
-            csv_path = db_info[3]
+            img_path = db_info[1]
+            csv_path = db_info[2]
             tab_path = Path(csv_path).with_suffix(".md")
             _convert_csv_md_tables(csv_path, tab_path)
             with open(tab_path, "r") as stream:
                 tab_string = stream.read()
             temp_list[-1] = f"{tab_string}\n\n"
             formatted.append(temp_list)
-        elif db_info[1] in constants.figures and str(db_info[2]).endswith(".png"):
+        elif db_info[0] in constants.figures and str(db_info[1]).endswith(".png"):
             temp_list = db_info
-            path = Path(db_info[2]).resolve()
+            path = Path(db_info[1]).resolve()
             img_dir = out.parent / "figures"
             img_out = Path(img_dir / path.name).resolve()
             img_dir.mkdir(parents=True, exist_ok=True)
@@ -48,31 +48,31 @@ def convert_db_markdown(original_src):
             shutil.copy2(path, img_out)
             temp_list[-1] = f"![Image]({rel_path})\n\n"
             formatted.append(temp_list)
-        elif db_info[1] in constants.table_rows:
+        elif db_info[0] in constants.table_rows:
             pass
     final = formatted
     with open(out, "w") as stream:
         for item in final:
             cur_index = formatted.index(item)
             prev_index = cur_index - 1
-            if formatted[cur_index][1] in constants.headings and prev_index < 0:
+            if formatted[cur_index][0] in constants.headings and prev_index < 0:
                 stream.writelines(item[-1])
-            elif formatted[prev_index][1] in constants.lists and formatted[cur_index][1] in constants.headings:
+            elif formatted[prev_index][0] in constants.lists and formatted[cur_index][0] in constants.headings:
                 stream.write("\n")
                 stream.writelines(item[-1])
-            elif formatted[prev_index][1] in constants.paragraphs and formatted[cur_index][1] in constants.headings:
+            elif formatted[prev_index][0] in constants.paragraphs and formatted[cur_index][0] in constants.headings:
                 stream.write("\n\n")
                 stream.writelines(item[-1])
-            elif formatted[prev_index][1] in constants.lists and formatted[cur_index][1] in constants.figures:
+            elif formatted[prev_index][0] in constants.lists and formatted[cur_index][0] in constants.figures:
                 stream.write("\n")
                 stream.writelines(item[-1])
-            elif formatted[prev_index][1] in constants.paragraphs and formatted[cur_index][1] in constants.figures:
+            elif formatted[prev_index][0] in constants.paragraphs and formatted[cur_index][0] in constants.figures:
                 stream.write("\n\n")
                 stream.writelines(item[-1])
-            elif formatted[prev_index][1] in constants.lists and formatted[cur_index][1] in constants.paragraphs:
+            elif formatted[prev_index][0] in constants.lists and formatted[cur_index][0] in constants.paragraphs:
                 stream.write("\n")
                 stream.writelines(item[-1])
-            elif formatted[prev_index][1] in constants.paragraphs and formatted[cur_index][1] in constants.lists:
+            elif formatted[prev_index][0] in constants.paragraphs and formatted[cur_index][0] in constants.lists:
                 stream.write("\n\n")
                 stream.writelines(item[-1])
             else:
