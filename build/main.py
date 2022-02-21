@@ -63,6 +63,7 @@ json_to_sqlite.split_main_json_file(src)
 src_dir = Path(constants.json_dir).resolve()
 for directory in src_dir.iterdir():
     convert.convert_db_markdown(directory.resolve())
+    convert.convert_db_markdown(directory.resolve(), with_imgs=False)
 
 # Convert PDF files to images for OCR/accuracy check.
 pdf_path = "../src/pdfs/"
