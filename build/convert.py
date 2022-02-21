@@ -21,7 +21,9 @@ def convert_db_markdown(original_src, with_imgs=True):
         out = constants.converted_dir / f"markdown/without-images/{new_name}/{new_name}.md"
     out.parent.mkdir(parents=True, exist_ok=True)
     for db_info in query_list:
-        if db_info[0] in constants.headings:
+        if db_info[-1] in constants.unwanted_pdf:
+            pass
+        elif db_info[0] in constants.headings:
             temp_list = db_info
             temp_list[-1] = "## " + db_info[-1] + "\n\n"
             formatted.append(temp_list)
@@ -58,7 +60,7 @@ def convert_db_markdown(original_src, with_imgs=True):
         for item in final:
             cur_index = formatted.index(item)
             prev_index = cur_index - 1
-            if formatted[cur_index][0] in constants.headings and prev_index < 0:
+            if prev_index < 0:
                 stream.writelines(item[-1])
             elif formatted[prev_index][0] in constants.lists and formatted[cur_index][0] in constants.headings:
                 stream.write("\n")
