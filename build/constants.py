@@ -15,7 +15,7 @@ paragraphs = ["P", "LBody", "ParagraphSpan", "Span", "StyleSpan"]
 lists = ["L"]
 table_rows = ["TR"]
 figures = ["Figure", "Table"]
-unwanted_pdf = ["*", "◈", "-", "•", "* ", "◈ ", "- ", "• "]
+unwanted_pdf = ["*", "◈", "-", "•", "* ", "◈ ", "- ", "• ", ":", ": ", ".    "]
 for i in range(0, 201):
     headings.append(f"H{i}")
     paragraphs.append(f"P[{i}]")
