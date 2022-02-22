@@ -1,4 +1,4 @@
-import parse_tab, constants
+import constants
 import logging, pytesseract, fitz
 import pandas as pd
 
@@ -81,41 +81,3 @@ def extract_images_from_pdf(input_path):
                     pix1.save(f"{image_dir}/p{page}-{xref}.png")
                     pix1 = None
                 pix = None
-
-def extract_tables_from_pdf(input_pdf, start, end, page_number=0, table_number=1):
-    """
-    After reading a page:
-
-    (1) search the strings that encapsulate our table
-    (2) from coordinates of those string occurences, we define the surrounding
-        rectangle. We use zero or large numbers to specify "no limit".
-    (3) call ParseTab to get the parsed table
-    
-    The ParseTab function parses tables contained in a page of a PDF
-    (or OpenXPS, EPUB) file and passes back a list of lists of strings
-    that represents the original table in matrix form.
-    """
-    input_pdf = Path(input_pdf)
-    doc = fitz.Document(input_pdf.resolve())
-    page = doc.load_page(page_number)
-    search_a = page.search_for(start, hit_max = 1)
-    if not search_a:
-        raise ValueError("The top delimiter was not found, exiting.")
-    rect1 = search_a[0]  # the rectangle that surrounds the search string
-    ymin = rect1.y1      # table starts below this value
-    search_b = page.search_for(end, hit_max = 1)
-    if not search_b:
-        logging.warning("The bottom delimiter was not found - using end of page instead.")
-        ymax = 99999
-    else:
-        rect2 = search_b[0]  # the rectangle that surrounds the search string
-        ymax = rect2.y0      # table ends above this value
-    if not ymin < ymax:      # something was wrong with the search strings
-        raise ValueError("Something went wrong. The bottom delimiter is higher than the top.")
-    table = parse_tab.parse_tab(page, [0, ymin, 9999, ymax])   
-    csv_path = Path(f"{constants.extracted_dir}/{input_pdf.stem}/extracted-tables/{input_pdf.stem}-page-{page_number + 1}-table-{table_number}.csv")
-    csv_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(csv_path, "w") as stream:
-        stream.write(start + "\n")
-        for value in table:
-            stream.write("|".join(value) + "\n")
