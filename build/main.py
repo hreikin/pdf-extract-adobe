@@ -27,7 +27,6 @@ logging.getLogger('').addHandler(console)
 
 ################################################################################
 
-
 new_headings = ["Title"]
 for item in constants.headings:
     new_headings.append(item)
@@ -35,8 +34,6 @@ for item in constants.headings:
         new_headings.append(f"{item}[{i}]")
 
 constants.headings = new_headings
-
-
 
 # Creates Json Schema zip file with Adobe API.
 source_path = "../src/pdfs/"
@@ -103,15 +100,3 @@ logging.info("Process complete, exiting.")
 # file_one = "../src/pdfs/Daresbury_labs_CS.1.pdf"
 # file_two = "../src/pdfs/Sputtering-Targets.pdf"
 # processing.overlay(file_one, file_two)
-
-# # Extract tables from PDF - MANUAL ONLY, might be a way to automate with a list.
-# pdf_path = "../src/pdfs/Sputtering-Targets.pdf"
-# start = "Metals "
-# end = "mmmmmmmm"
-# extraction.extract_tables_from_pdf(pdf_path, start, end)
-# pdf_path = "../src/pdfs/Sputtering-Targets.pdf"
-# start = " "
-# end = "Other materials"
-# page_num = 1
-# table_num = 2
-# extraction.extract_tables_from_pdf(pdf_path, start, end, page_number=page_num, table_number=table_num)
