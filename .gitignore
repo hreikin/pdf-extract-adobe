@@ -149,3 +149,4 @@ zips/
 test/
 pdfservices-api-credentials.json
 private.key
+pdf-urls.*
