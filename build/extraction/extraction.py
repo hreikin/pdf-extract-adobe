@@ -1,4 +1,4 @@
-import constants
+import utilities.constants
 import logging, pytesseract, fitz
 import pandas as pd
 
@@ -19,7 +19,7 @@ def convert_pages_into_image(input_path, format):
         logging.debug(f"Converting '{pdf_file.resolve()}'.")
         doc = fitz.open(pdf_file)
         image_name = pdf_file.stem + "_page_"
-        images_path = constants.converted_dir / "pages-converted-to-images" / pdf_file.stem
+        images_path = utilities.constants.converted_dir / "pages-converted-to-images" / pdf_file.stem
         Path(images_path).mkdir(parents=True, exist_ok=True)
         for page in doc:
             logging.debug(f"Image created at '{images_path}/{image_name}{page.number}{format}'.")
@@ -38,7 +38,7 @@ def ocr_images_for_text_confidence(input_path, format=".png"):
                 images_file_list = sorted(Path(sub_dir).rglob(f"*{format}"))
                 for item in images_file_list:
                     split_name = item.name.split("_page_")
-                    txt_file_path = Path(f"{constants.confidence_dir}/{sub_dir.name}/{split_name[0]}-IMAGE-OCR.txt").resolve()
+                    txt_file_path = Path(f"{utilities.constants.confidence_dir}/{sub_dir.name}/{split_name[0]}-IMAGE-OCR.txt").resolve()
                     txt_file_path.parent.mkdir(parents=True, exist_ok=True)
                     logging.debug(f"Performing OCR on '{item.resolve()}'.")
                     logging.debug(f"Creating text output file at '{txt_file_path}'.")
@@ -50,7 +50,7 @@ def extract_text_from_pdf_confidence(input_path):
     input_path = Path(input_path).resolve()
     pdf_file_list = sorted(Path(input_path).rglob(f"*.pdf"))
     for pdf in pdf_file_list:
-        txt_file_path = Path(f"{constants.confidence_dir}/{pdf.stem}/{pdf.stem}-PYMUPDF-TXT.txt").resolve()
+        txt_file_path = Path(f"{utilities.constants.confidence_dir}/{pdf.stem}/{pdf.stem}-PYMUPDF-TXT.txt").resolve()
         txt_file_path.parent.mkdir(parents=True, exist_ok=True)
         logging.debug(f"Extracting text from '{pdf.resolve()}'.")
         logging.debug(f"Creating text output file at '{txt_file_path}'.")
@@ -66,7 +66,7 @@ def extract_images_from_pdf(input_path):
     pdf_file_list = sorted(Path(input_path).rglob(f"*.pdf"))
     for pdf in pdf_file_list:
         doc = fitz.open(pdf)
-        image_dir = Path(f"{constants.extracted_dir}/{pdf.stem}/extracted-images").resolve()
+        image_dir = Path(f"{utilities.constants.extracted_dir}/{pdf.stem}/extracted-images").resolve()
         image_dir.mkdir(parents=True, exist_ok=True)
         for page in range(len(doc)):
             for img in doc.get_page_images(page):

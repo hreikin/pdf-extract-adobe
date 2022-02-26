@@ -1,4 +1,4 @@
-import adobe_json, confidence, extraction, processing, json_to_sqlite, utilities, convert, constants
+import extraction.adobe_json, processing.processing, extraction.json_to_sqlite, utilities.utilities, conversion.convert, utilities.constants
 import logging
 
 from pathlib import Path
@@ -28,75 +28,75 @@ logging.getLogger('').addHandler(console)
 ################################################################################
 
 new_headings = ["Title"]
-for item in constants.headings:
+for item in utilities.constants.headings:
     new_headings.append(item)
     for i in range(0, 101):
         new_headings.append(f"{item}[{i}]")
 
-constants.headings = new_headings
+utilities.constants.headings = new_headings
 
 # Creates Json Schema zip file with Adobe API.
 source_path = "../src/pdfs/"
 logging.info("Creating JSON Schema with Adobe API.")
-adobe_json.extract_pdf_adobe(source_path)
+extraction.adobe_json.extract_pdf_adobe(source_path)
 
 # # Extracts Json Schema from zip file. Automatically called after the API 
 # # requests are complete. Can be used on its own.
 # zip_source = "../src/zips/"
 # logging.info("Extracting JSON Schema from zip files.")
-# utilities.extract_from_zip(zip_source)
+# utilities.utilities.extract_from_zip(zip_source)
 
 # Creates list of PDF/URL pairs.
 logging.info("Creating PDF/URL list.")
-adobe_json.create_pdf_url_list()
+extraction.adobe_json.create_pdf_url_list()
 
 # Splits the main Json Schema file into parts based on the top-level keys in the 
 # file and then targets "Text", "filePaths", "Path" and "Page" values from 
 # within the "elements.json" file and inserts it into an SQLite DB.
 src = "../src/json/"
 logging.info("Manipulating Json and creating SQLite tables.")
-json_to_sqlite.split_main_json_file(src)
+extraction.json_to_sqlite.split_main_json_file(src)
 
-src_dir = Path(constants.json_dir).resolve()
+src_dir = Path(utilities.constants.json_dir).resolve()
 for directory in src_dir.iterdir():
-    convert.convert_db_markdown(directory.resolve())
-    convert.convert_db_markdown(directory.resolve(), with_imgs=False)
+    conversion.convert.convert_db_markdown(directory.resolve())
+    conversion.convert.convert_db_markdown(directory.resolve(), with_imgs=False)
 
 # Convert PDF files to images for OCR/accuracy check.
 pdf_path = "../src/pdfs/"
 image_format = ".png"
 logging.info("Converting PDF files to images.")
-extraction.convert_pages_into_image(pdf_path, image_format)
+extraction.extraction.convert_pages_into_image(pdf_path, image_format)
 
 # Run the converted pdf images through OCR and create a text file for each one as output.
 input_path = "../src/converted/"
 logging.info("Running the converted images through OCR.")
-extraction.ocr_images_for_text_confidence(input_path)
+extraction.extraction.ocr_images_for_text_confidence(input_path)
 
 # Extract text from PDF with PyMuPDF.
 pdf_path = "../src/pdfs/"
-extraction.extract_text_from_pdf_confidence(pdf_path)
+extraction.extraction.extract_text_from_pdf_confidence(pdf_path)
 
 # Confidence Check
 input_path = "../src/confidence/"
 logging.info("Performing basic confidence check.")
-confidence.confidence_check_text(input_path)
+extraction.confidence.confidence_check_text(input_path)
 
 # Extract images from PDF
 pdf_path = "../src/pdfs/"
-extraction.extract_images_from_pdf(pdf_path)
+extraction.extraction.extract_images_from_pdf(pdf_path)
 logging.info("Process complete, exiting.")
 
 # # Split all PDF pages
 # pdf_file = "../src/pdfs/Daresbury_labs_CS.1.pdf"
-# processing.split_all_pages_pdf(pdf_file)
+# processing.processing.split_all_pages_pdf(pdf_file)
 
 # # Merge two PDF files.
 # file_one = "../src/pdfs/Daresbury_labs_CS.1.pdf"
 # file_two = "../src/pdfs/Sputtering-Targets.pdf"
-# processing.append_pdf(file_one, file_two)
+# processing.processing.append_pdf(file_one, file_two)
 
 # # Overlay PDF with another.
 # file_one = "../src/pdfs/Daresbury_labs_CS.1.pdf"
 # file_two = "../src/pdfs/Sputtering-Targets.pdf"
-# processing.overlay(file_one, file_two)
+# processing.processing.overlay(file_one, file_two)

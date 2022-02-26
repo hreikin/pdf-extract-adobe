@@ -1,4 +1,4 @@
-import constants
+import utilities.constants
 import json
 import os
 
@@ -34,23 +34,23 @@ def _split_elements_json(src):
         temp_dict = dictionary
         split_path = str(dictionary["Element Type"]).lstrip("//").split("/")
         for item in split_path:
-            if split_path[-1] in constants.figures:
+            if split_path[-1] in utilities.constants.figures:
                 temp_dict["Element Type"] = split_path[-1]
                 final.append(temp_dict)
                 break
-            if item in constants.headings:
+            if item in utilities.constants.headings:
                 temp_dict["Element Type"] = item
                 final.append(temp_dict)
                 break
-            if item in constants.lists:
+            if item in utilities.constants.lists:
                 temp_dict["Element Type"] = item
                 final.append(temp_dict)
                 break
-            if item in constants.paragraphs:
+            if item in utilities.constants.paragraphs:
                 temp_dict["Element Type"] = item
                 final.append(temp_dict)
                 break
-            if item in constants.table_rows:
+            if item in utilities.constants.table_rows:
                 temp_dict["Element Type"] = item
                 final.append(temp_dict)
                 break
@@ -59,7 +59,7 @@ def _split_elements_json(src):
 
 def _sqlitebiter_import_json(src):
     all_files = Path(src).rglob("*.json")
-    db_out = Path(constants.database).resolve()
+    db_out = Path(utilities.constants.database).resolve()
     db_out.parent.mkdir(parents=True, exist_ok=True)
     for file in all_files:
         if file.name == f"{Path(src).parent.name}.json":
@@ -94,7 +94,7 @@ def _iterate_json(json_file,  src, processing):
                         }
                 processing.append(temp_dict)
             elif key == "Text":
-                if sub_dict[key] in constants.unwanted_pdf[::]:
+                if sub_dict[key] in utilities.constants.unwanted_pdf[::]:
                     break
                 text_index = keys_list.index(key)
                 path_index = keys_list.index("Path")
@@ -108,7 +108,7 @@ def _iterate_json(json_file,  src, processing):
                     "Page Num" : values_list[page_index],
                     }
                 processing.append(temp_dict)
-                txt_out = constants.confidence_dir / src.parent.name / f"{src.parent.name}-JSON-TXT.txt"
+                txt_out = utilities.constants.confidence_dir / src.parent.name / f"{src.parent.name}-JSON-TXT.txt"
                 txt_out.parent.mkdir(parents=True, exist_ok=True)
                 with open(txt_out, "a") as stream:
                     stream.write(str(values_list[text_index]) + "\n")

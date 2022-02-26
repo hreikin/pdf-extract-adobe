@@ -1,5 +1,5 @@
 import logging
-import constants
+import utilities.constants
 
 from pathlib import Path
 from difflib import SequenceMatcher, get_close_matches
@@ -158,7 +158,7 @@ def confidence_check_text(input_path):
                 "Comparison Average Ratio" : comparison_ratio,
                 "Total Average Ratio" : total_average_ratio,
             }
-    output_file = Path(f"{constants.confidence_dir}/all-confidence-scores.txt").resolve()
+    output_file = Path(f"{utilities.constants.confidence_dir}/all-confidence-scores.txt").resolve()
     logging.debug(f"Creating text output file with results '{output_file}'.")
     with open(output_file, "w") as stream:
         stream.write(f"PDF".ljust(50) + f"Score".rjust(30))
