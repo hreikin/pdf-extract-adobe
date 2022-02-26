@@ -29,7 +29,7 @@ def extract_pdf_adobe(source_path):
     for pdf in pdf_file_list:
         _create_adobe_request(pdf)
     logging.info("Extracting JSON Schema.")
-    utilities.extract_from_zip(zip_path)
+    utilities.utilities.extract_from_zip(zip_path)
     # Leave the below commented out while testing using the "main.py" file.
     # logging.info("Manipulating Json and creating SQLite tables.")
     # extraction.json_to_sqlite.split_main_json_file(utilities.constants.json_dir)

@@ -1,4 +1,4 @@
-import extraction.adobe_json, processing.processing, extraction.json_to_sqlite, utilities.utilities, conversion.convert, utilities.constants
+import extraction.adobe_json, processing.processing, extraction.json_to_sqlite, utilities.utilities, conversion.convert, utilities.constants, extraction.extraction, extraction.confidence
 import logging
 
 from pathlib import Path
