@@ -1,7 +1,11 @@
-import extraction.adobe_json, processing.processing, extraction.json_to_sqlite, utilities.utilities, conversion.convert, utilities.constants, extraction.extraction, extraction.confidence
-import logging
-
 from pathlib import Path
+from tkinter import *
+from tkinter import font, filedialog
+from tkinter import messagebox as mbox
+from tkinter.scrolledtext import ScrolledText
+from tkinter.ttk import Notebook
+from utilities import constants
+import logging
 
 ##################################### LOGS #####################################
 # Initialize the logger and specify the level of logging. This will log "DEBUG" 
@@ -28,75 +32,115 @@ logging.getLogger('').addHandler(console)
 ################################################################################
 
 new_headings = ["Title"]
-for item in utilities.constants.headings:
+for item in constants.headings:
     new_headings.append(item)
     for i in range(0, 101):
         new_headings.append(f"{item}[{i}]")
 
-utilities.constants.headings = new_headings
+class PCCWindow(Frame):
+    def __init__(self, master=None):
+        Frame.__init__(self, master)
+        self.master = master
+        self.myfont = font.Font(family="Ubuntu", size=16)
+        self.init_window()
 
-# Creates Json Schema zip file with Adobe API.
-source_path = "../src/pdfs/"
-logging.info("Creating JSON Schema with Adobe API.")
-extraction.adobe_json.extract_pdf_adobe(source_path)
+    def init_window(self):
+        # This gives a left and right sidebar with a "main area" that is separated top and bottom.
+        self.pw = PanedWindow(orient="horizontal")
+        self.left_sidebar = Notebook(self.pw, width=300)
+        self.main = PanedWindow(self.pw, orient="vertical")
+        self.pw_top = Notebook(self.main)
+        self.pw_bottom = Notebook(self.main, height=100)
+        self.right_sidebar = Notebook(self.pw, width=300)
 
-# # Extracts Json Schema from zip file. Automatically called after the API 
-# # requests are complete. Can be used on its own.
-# zip_source = "../src/zips/"
-# logging.info("Extracting JSON Schema from zip files.")
-# utilities.utilities.extract_from_zip(zip_source)
+        # Top half of main section, includes text area.
+        self.text_area = ScrolledText(self.pw_top, state="normal", wrap="word", pady=2, padx=3, undo=True, width=125, height=50, font=self.myfont)
+        self.text_area.focus_set()
+        default_file = Path("welcome.md").resolve()
+        constants.cur_file = default_file
+        with open(default_file, "r") as stream:
+            default_text = stream.read()
+        self.text_area.insert(0.0, default_text)
+        self.master.title(f"Python Content Creator - {constants.cur_file.name}")
 
-# Creates list of PDF/URL pairs.
-logging.info("Creating PDF/URL list.")
-extraction.adobe_json.create_pdf_url_list()
+        # Bottom half of main section includes console.
+        self.console_area = ScrolledText(self.pw_bottom, state="normal", wrap="word", pady=2, padx=3)
 
-# Splits the main Json Schema file into parts based on the top-level keys in the 
-# file and then targets "Text", "filePaths", "Path" and "Page" values from 
-# within the "elements.json" file and inserts it into an SQLite DB.
-src = "../src/json/"
-logging.info("Manipulating Json and creating SQLite tables.")
-extraction.json_to_sqlite.split_main_json_file(src)
+        # Right sidebar with extraction, conversion, import and preview tabs.
+        self.extraction_tab = Frame(self.right_sidebar, width=100)
+        self.conversion_tab = Frame(self.right_sidebar, width=100)
+        self.database_tab = Frame(self.right_sidebar, width=100)
+        self.preview_area = Frame(self.right_sidebar, width=100)
+        # grip_serve = partial(serve_preview)
+        self.btn_preview = Button(self.preview_area, text="Preview")
+        self.btn_preview.pack()
+        self.right_sidebar.add(self.extraction_tab, text="Extract")
+        self.right_sidebar.add(self.conversion_tab, text="Convert")
+        self.right_sidebar.add(self.database_tab, text="Import")
+        self.right_sidebar.add(self.preview_area, text="Preview")
 
-src_dir = Path(utilities.constants.json_dir).resolve()
-for directory in src_dir.iterdir():
-    conversion.convert.convert_db_markdown(directory.resolve())
-    conversion.convert.convert_db_markdown(directory.resolve(), with_imgs=False)
+        # Left sidebar with directory/tree view tab.
+        self.tree_view_tab = Frame(self.left_sidebar)
+        self.left_sidebar.add(self.tree_view_tab, text="Tree View")
 
-# Convert PDF files to images for OCR/accuracy check.
-pdf_path = "../src/pdfs/"
-image_format = ".png"
-logging.info("Converting PDF files to images.")
-extraction.extraction.convert_pages_into_image(pdf_path, image_format)
+        # add the paned window to the root
+        self.pw.pack(fill="both", expand=True)
 
-# Run the converted pdf images through OCR and create a text file for each one as output.
-input_path = "../src/converted/"
-logging.info("Running the converted images through OCR.")
-extraction.extraction.ocr_images_for_text_confidence(input_path)
+        # add the sidebars and main area to the root paned window, note the order
+        self.pw.add(self.left_sidebar)
+        self.pw.add(self.main)
+        self.pw.add(self.right_sidebar)
 
-# Extract text from PDF with PyMuPDF.
-pdf_path = "../src/pdfs/"
-extraction.extraction.extract_text_from_pdf_confidence(pdf_path)
+        # add the top and bottom to the main window
+        self.main.add(self.pw_top)
+        self.main.add(self.pw_bottom)
 
-# Confidence Check
-input_path = "../src/confidence/"
-logging.info("Performing basic confidence check.")
-extraction.confidence.confidence_check_text(input_path)
+        # add top and bottom sections of main window area
+        self.pw_top.add(self.text_area, text=constants.cur_file.name)
+        self.pw_bottom.add(self.console_area, text="Console")
 
-# Extract images from PDF
-pdf_path = "../src/pdfs/"
-extraction.extraction.extract_images_from_pdf(pdf_path)
-logging.info("Process complete, exiting.")
 
-# # Split all PDF pages
-# pdf_file = "../src/pdfs/Daresbury_labs_CS.1.pdf"
-# processing.processing.split_all_pages_pdf(pdf_file)
+        self.text_area.bind("<<Modified>>", self.on_input_change)
+        self.main_menu = Menu(self)
+        self.file_menu = Menu(self.main_menu)
+        self.file_menu.add_command(label="Open", command=self.open_file)
+        self.file_menu.add_command(label="Save as", command=self.save_file)
+        self.file_menu.add_separator()
+        self.file_menu.add_command(label="Exit", command=self.quit)
+        self.main_menu.add_cascade(label="File", menu=self.file_menu)
+        self.master.config(menu=self.main_menu)
 
-# # Merge two PDF files.
-# file_one = "../src/pdfs/Daresbury_labs_CS.1.pdf"
-# file_two = "../src/pdfs/Sputtering-Targets.pdf"
-# processing.processing.append_pdf(file_one, file_two)
+    def on_input_change(self, event):
+        self.text_area.edit_modified(0)
+        pass
 
-# # Overlay PDF with another.
-# file_one = "../src/pdfs/Daresbury_labs_CS.1.pdf"
-# file_two = "../src/pdfs/Sputtering-Targets.pdf"
-# processing.processing.overlay(file_one, file_two)
+    def open_file(self):
+        open_filename = filedialog.askopenfilename(filetypes=(("Markdown File", "*.md , *.mdown , *.markdown"), ("Text File", "*.txt"), ("All Files", "*.*")))
+        if open_filename:
+            try:
+                with open(open_filename, "r") as stream:
+                    open_filename_contents = stream.read()
+                self.text_area.delete(1.0, END)
+                self.text_area.insert(END, open_filename_contents)
+                constants.cur_file = Path(open_filename)
+                self.pw_top.tab(self.text_area, text=constants.cur_file.name)
+                self.master.title(f"Python Content Creator - {constants.cur_file}")
+            except:
+                mbox.showerror(f"Error Opening Selected File\n\nThe file you selected: {open_filename} can not be opened!")
+    
+    def save_file(self):
+        file_data = self.text_area.get("1.0" , END)
+        save_filename = filedialog.asksaveasfilename(filetypes = (("Markdown File", "*.md"), ("Text File", "*.txt")) , title="Save Markdown File")
+        if save_filename:
+            try:
+                with open(save_filename, "w") as stream:
+                    stream.write(file_data)
+            except:
+                mbox.showerror(f"Error Saving File\n\nThe file: {save_filename} can not be saved!")
+
+root = Tk()
+screen_height = root.winfo_screenheight()
+screen_width = root.winfo_screenwidth()
+root.geometry(f"{screen_width}x{screen_height}")
+pcc = PCCWindow(root)
+pcc.mainloop()
