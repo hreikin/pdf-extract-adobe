@@ -54,7 +54,7 @@ class PCCWindow(Frame):
         self.right_sidebar = Notebook(self.pw, width=300)
 
         # Top half of main section, includes text area.
-        self.text_area = ScrolledText(self.pw_top, state="normal", wrap="word", pady=2, padx=3, undo=True, width=125, height=50, font=self.myfont)
+        self.text_area = ScrolledText(self.pw_top, state="normal", wrap="word", pady=2, padx=3, undo=True, width=90, height=50, font=self.myfont)
         self.text_area.focus_set()
         default_file = Path("welcome.md").resolve()
         constants.cur_file = default_file
@@ -74,10 +74,10 @@ class PCCWindow(Frame):
         # grip_serve = partial(serve_preview)
         self.btn_preview = Button(self.preview_area, text="Preview")
         self.btn_preview.pack()
-        self.right_sidebar.add(self.extraction_tab, text="Extract")
-        self.right_sidebar.add(self.conversion_tab, text="Convert")
-        self.right_sidebar.add(self.database_tab, text="Import")
-        self.right_sidebar.add(self.preview_area, text="Preview")
+        self.right_sidebar.add(self.extraction_tab, text="Extract", sticky="nsew")
+        self.right_sidebar.add(self.conversion_tab, text="Convert", sticky="nsew")
+        self.right_sidebar.add(self.database_tab, text="Import", sticky="nsew")
+        self.right_sidebar.add(self.preview_area, text="Preview", sticky="nsew")
 
         # Left sidebar with directory/tree view tab.
         self.tree_view_tab = Frame(self.left_sidebar)
@@ -115,7 +115,7 @@ class PCCWindow(Frame):
         pass
 
     def open_file(self):
-        open_filename = filedialog.askopenfilename(filetypes=(("Markdown File", "*.md , *.mdown , *.markdown"), ("Text File", "*.txt"), ("All Files", "*.*")))
+        open_filename = filedialog.askopenfilename(filetypes=(("Markdown File", "*.md , *.mdown , *.markdown"), ("Text File", "*.txt"), ("All Files", "*.*")), initialdir=constants.src_dir)
         if open_filename:
             try:
                 with open(open_filename, "r") as stream:
@@ -124,7 +124,7 @@ class PCCWindow(Frame):
                 self.text_area.insert(END, open_filename_contents)
                 constants.cur_file = Path(open_filename)
                 self.pw_top.tab(self.text_area, text=constants.cur_file.name)
-                self.master.title(f"Python Content Creator - {constants.cur_file}")
+                self.master.title(f"Python Content Creator - {constants.cur_file.name}")
             except:
                 mbox.showerror(f"Error Opening Selected File\n\nThe file you selected: {open_filename} can not be opened!")
     
