@@ -10,6 +10,7 @@ json_dir = src_dir / "json"
 pdf_dir = src_dir / "pdfs"
 zip_dir = src_dir / "zips"
 database = src_dir / "sqlite" / "pcc.sqlite"
+cur_file = None
 headings = []
 paragraphs = ["P", "LBody", "ParagraphSpan", "Span", "StyleSpan"]
 lists = ["L"]
