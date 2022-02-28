@@ -35,20 +35,25 @@ logging.getLogger('').addHandler(console)
 
 ################################################################################
 
+# Appends extra headings to constants.headings
 new_headings = ["Title"]
 for item in constants.headings:
     new_headings.append(item)
     for i in range(0, 101):
         new_headings.append(f"{item}[{i}]")
+constants.headings = new_headings
 
 class PCCWindow(Frame):
+    """Create a subclass of Frame for our window."""
     def __init__(self, master=None):
+        """Initialize and set the font."""
         Frame.__init__(self, master)
         self.master = master
         self.myfont = font.Font(family="Ubuntu", size=16)
         self.init_window()
 
     def init_window(self):
+        """Construct the layout"""
         # This gives a left and right sidebar with a "main area" that is separated top and bottom.
         self.pw = PanedWindow(orient="horizontal")
         self.left_sidebar = Notebook(self.pw, width=300)
@@ -115,10 +120,12 @@ class PCCWindow(Frame):
         self.master.config(menu=self.main_menu)
 
     def on_input_change(self, event):
+        """This is currently unfinished. Should be used to reload changes in Grip"""
         self.text_area.edit_modified(0)
         pass
 
     def open_file(self):
+        """Open a file a clear/insert the text into the text_area."""
         open_filename = filedialog.askopenfilename(filetypes=(("Markdown File", "*.md , *.mdown , *.markdown"), ("Text File", "*.txt"), ("All Files", "*.*")), initialdir=constants.src_dir)
         if open_filename:
             try:
@@ -133,6 +140,7 @@ class PCCWindow(Frame):
                 mbox.showerror(f"Error Opening Selected File\n\nThe file you selected: {open_filename} can not be opened!")
     
     def save_file(self):
+        """Saves the file with the given filename."""
         file_data = self.text_area.get("1.0" , END)
         save_filename = filedialog.asksaveasfilename(filetypes = (("Markdown File", "*.md"), ("Text File", "*.txt")) , title="Save Markdown File")
         if save_filename:
@@ -143,13 +151,15 @@ class PCCWindow(Frame):
                 mbox.showerror(f"Error Saving File\n\nThe file: {save_filename} can not be saved!")
 
     def serve_preview(self):
+        """Starts the Grip server using threading.Thread."""
         self.serve_grip = partial(grip.serve, path=constants.cur_file.resolve(), browser=True)
         self.preview_thread = threading.Thread(target=self.serve_grip)
         self.preview_thread.start()
 
 
             
-
+# Instantiate the root window, set the screen size and instantiate the PCC window
+# before running the main loop.
 root = Tk()
 screen_height = root.winfo_screenheight()
 screen_width = root.winfo_screenwidth()
