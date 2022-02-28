@@ -1,9 +1,13 @@
+from functools import partial
 from pathlib import Path
+import threading
 from tkinter import *
 from tkinter import font, filedialog
 from tkinter import messagebox as mbox
 from tkinter.scrolledtext import ScrolledText
 from tkinter.ttk import Notebook
+
+import grip
 from utilities import constants
 import logging
 
@@ -72,7 +76,7 @@ class PCCWindow(Frame):
         self.database_tab = Frame(self.right_sidebar, width=100)
         self.preview_area = Frame(self.right_sidebar, width=100)
         # grip_serve = partial(serve_preview)
-        self.btn_preview = Button(self.preview_area, text="Preview")
+        self.btn_preview = Button(self.preview_area, text="Preview", command=self.serve_preview)
         self.btn_preview.pack()
         self.right_sidebar.add(self.extraction_tab, text="Extract", sticky="nsew")
         self.right_sidebar.add(self.conversion_tab, text="Convert", sticky="nsew")
@@ -137,6 +141,14 @@ class PCCWindow(Frame):
                     stream.write(file_data)
             except:
                 mbox.showerror(f"Error Saving File\n\nThe file: {save_filename} can not be saved!")
+
+    def serve_preview(self):
+        self.serve_grip = partial(grip.serve, path=constants.cur_file.resolve(), browser=True)
+        self.preview_thread = threading.Thread(target=self.serve_grip)
+        self.preview_thread.start()
+
+
+            
 
 root = Tk()
 screen_height = root.winfo_screenheight()
