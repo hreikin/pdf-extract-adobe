@@ -14,7 +14,6 @@ available in other file formats.
 - Place `Adobe PDF Extract API` credentials in root of repository.
 - Install `Python Imaging Library` (or the `Pillow fork`) for your OS
 - Install `Tesseract OCR` for your OS.
-- Install `wxGTK-devel` for your OS (Linux only)
 
 ```
 python3 -m venv .venv
@@ -39,18 +38,16 @@ shutil.copy(self._file_path, abs_path)
 ```
 
 ## Scores
-The file `confidence.py` creates two text files for comparison to create a 
-rudimentary confidence check as one isn't provided by the API. Scores are 
-calculated using the `SequenceMatcher` class and `get_close_matches` method from 
-`difflib`. 
+The file `confidence.py` creates three text files for comparison to create a 
+rudimentary confidence check as one isn't provided by the API. The score is a 
+comparison between the API's extraction and other extraction techniques. Scores 
+are calculated using the `SequenceMatcher` class and `get_close_matches` method 
+from `difflib`. 
 
 A score of **0.6** for any of the calculated scores is considered a close match. 
 All scores are stored in a dictionary and a text file is created with the 
 results.
 
-## TODO
-- [x] Create broad function to target all required items
-- [x] Display text only output using print or similar
-- [x] Accuracy check of extracted Json
-- [x] Create database with Json
-- [ ] File conversion using info stored in database
+## Current Development
+The current development progress is being tracked within this repositories 
+Issues.
