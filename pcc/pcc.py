@@ -1,15 +1,16 @@
+from utilities import constants
+
 from functools import partial
 from pathlib import Path
-import threading
 from tkinter import *
 from tkinter import font, filedialog
 from tkinter import messagebox as mbox
 from tkinter.scrolledtext import ScrolledText
 from tkinter.ttk import Notebook
 
-import grip
-from utilities import constants
+import multiprocessing
 import logging
+import grip
 
 ##################################### LOGS #####################################
 # Initialize the logger and specify the level of logging. This will log "DEBUG" 
@@ -80,9 +81,10 @@ class PCCWindow(Frame):
         self.conversion_tab = Frame(self.right_sidebar, width=100)
         self.database_tab = Frame(self.right_sidebar, width=100)
         self.preview_area = Frame(self.right_sidebar, width=100)
-        # grip_serve = partial(serve_preview)
-        self.btn_preview = Button(self.preview_area, text="Preview", command=self.serve_preview)
-        self.btn_preview.pack()
+        self.btn_preview_start = Button(self.preview_area, text="Start Preview", command=self.start_preview)
+        self.btn_preview_start.pack()
+        self.btn_preview_stop = Button(self.preview_area, text="Stop Preview", command=self.stop_preview)
+        self.btn_preview_stop.pack()
         self.right_sidebar.add(self.extraction_tab, text="Extract", sticky="nsew")
         self.right_sidebar.add(self.conversion_tab, text="Convert", sticky="nsew")
         self.right_sidebar.add(self.database_tab, text="Import", sticky="nsew")
@@ -150,12 +152,16 @@ class PCCWindow(Frame):
             except:
                 mbox.showerror(f"Error Saving File\n\nThe file: {save_filename} can not be saved!")
 
-    def serve_preview(self):
-        """Starts the Grip server using threading.Thread."""
+    def start_preview(self):
+        """Starts the Grip server using multiprocessing library."""
         self.serve_grip = partial(grip.serve, path=constants.cur_file.resolve(), browser=True)
-        self.preview_thread = threading.Thread(target=self.serve_grip)
+        self.preview_thread = multiprocessing.Process(target=self.serve_grip)
         self.preview_thread.start()
 
+    def stop_preview(self):
+        """Stops the Grip server."""
+        self.preview_thread.terminate()
+        # pass
 
             
 # Instantiate the root window, set the screen size and instantiate the PCC window
