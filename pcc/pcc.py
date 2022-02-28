@@ -64,7 +64,7 @@ class PCCWindow(Frame):
         self.right_sidebar = Notebook(self.pw, width=300)
 
         # Top half of main section, includes text area.
-        self.text_area = ScrolledText(self.pw_top, state="normal", wrap="word", pady=2, padx=3, undo=True, width=90, height=50, font=self.myfont)
+        self.text_area = ScrolledText(self.pw_top, state="normal", wrap="word", pady=2, padx=3, undo=True, width=90, height=27, font=self.myfont)
         self.text_area.focus_set()
         default_file = Path("welcome.md").resolve()
         constants.cur_file = default_file
@@ -74,7 +74,7 @@ class PCCWindow(Frame):
         self.master.title(f"Python Content Creator - {constants.cur_file.name}")
 
         # Bottom half of main section includes console.
-        self.console_area = ScrolledText(self.pw_bottom, state="normal", wrap="word", pady=2, padx=3)
+        self.console_area = ScrolledText(self.pw_bottom, state="normal", wrap="word", pady=2, padx=3, height=13)
 
         # Right sidebar with extraction, conversion, import and preview tabs.
         self.extraction_tab = Frame(self.right_sidebar, width=100)
