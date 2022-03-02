@@ -77,18 +77,35 @@ class PCCWindow(Frame):
         self.console_area = ScrolledText(self.pw_bottom, state="normal", wrap="word", pady=2, padx=3, height=13)
 
         # Right sidebar with extraction, conversion, import and preview tabs.
+        # Extraction tab construction.
         self.extraction_tab = Frame(self.right_sidebar, width=100)
+        self.adobe_request = Frame(self.extraction_tab, relief="groove", borderwidth=3)
+        self.adobe_request.pack(fill="x", expand=1)
+        self.adobe_request_lbl = Label(self.adobe_request, text="Adobe PDF Extract API")
+        self.adobe_request_lbl.pack(fill="x", expand=1)
+        self.adobe_request_ent_val = StringVar()
+        self.adobe_request_ent = Entry(self.adobe_request, textvariable=self.adobe_request_ent_val)
+        self.adobe_request_ent.pack(fill="x", expand=1, side="left")
+        self.adobe_request_btn = Button(self.adobe_request, text="Browse", command=self.adobe_browse_folder)
+        self.adobe_request_btn.pack(fill="x", expand=1, side="right")
+
         self.conversion_tab = Frame(self.right_sidebar, width=100)
         self.database_tab = Frame(self.right_sidebar, width=100)
-        self.preview_area = Frame(self.right_sidebar, width=100)
-        self.btn_preview_start = Button(self.preview_area, text="Start Preview", command=self.start_preview)
-        self.btn_preview_start.pack()
-        self.btn_preview_stop = Button(self.preview_area, text="Stop Preview", command=self.stop_preview)
-        self.btn_preview_stop.pack()
+        # Preview tab construction.
+        self.preview_tab = Frame(self.right_sidebar, width=100)
+        self.preview_area = Frame(self.preview_tab, relief="groove", borderwidth=3)
+        self.preview_area.pack(fill="x", expand=1)
+        self.lbl_preview = Label(self.preview_area, text="Browser Preview")
+        self.lbl_preview.pack(fill="none", expand=1)
+        self.btn_preview_start = Button(self.preview_area, text="Start Preview", state="active", command=self.start_preview)
+        self.btn_preview_start.pack(fill="x", expand=1, padx=(10,5), pady=(10,10), side="left")
+        self.btn_preview_stop = Button(self.preview_area, text="Stop Preview", state="normal", command=self.stop_preview)
+        self.btn_preview_stop.pack(fill="x", expand=1, padx=(5,10), pady=(10,10), side="right")
+        # Add the tabs to the right sidebar.
         self.right_sidebar.add(self.extraction_tab, text="Extract", sticky="nsew")
         self.right_sidebar.add(self.conversion_tab, text="Convert", sticky="nsew")
         self.right_sidebar.add(self.database_tab, text="Import", sticky="nsew")
-        self.right_sidebar.add(self.preview_area, text="Preview", sticky="nsew")
+        self.right_sidebar.add(self.preview_tab, text="Preview", sticky="nsew")
 
         # Left sidebar with directory/tree view tab.
         self.tree_view_tab = Frame(self.left_sidebar)
@@ -122,7 +139,7 @@ class PCCWindow(Frame):
         self.master.config(menu=self.main_menu)
 
     def on_input_change(self, event):
-        """This is currently unfinished. Should be used to reload changes in Grip"""
+        """This is currently unfinished."""
         self.text_area.edit_modified(0)
         pass
 
@@ -163,6 +180,10 @@ class PCCWindow(Frame):
         self.preview_thread.terminate()
         # pass
 
+    def adobe_browse_folder(self):
+        """Browse for a folder and set the Entry field to the chosen folder."""
+        pdf_dir = filedialog.askdirectory(initialdir=constants.src_dir)
+        self.adobe_request_ent_val.set(pdf_dir)
             
 # Instantiate the root window, set the screen size and instantiate the PCC window
 # before running the main loop.
