@@ -44,6 +44,8 @@ class ExtractPDF(Frame):
         self.next_btn.pack(side="left", padx=0, pady=0)
         self.prev_btn = Button(self.top_bar, text="Prev", command=self.prev_page)
         self.prev_btn.pack(side="left", padx=0, pady=0)
+        self.zoom_btn = Button(self.top_bar, text="Zoom", command=self.toggle_zoom)
+        self.zoom_btn.pack(side="left", padx=0, pady=0)
         self.top_bar.pack(side="top", fill="x")
 
         self.pdf_preview = Frame(self.preview_area, relief="groove", borderwidth=5)
@@ -59,7 +61,18 @@ class ExtractPDF(Frame):
 # Open the PDF file to view/edit/extract from.
 # ------------------------------------------------------------------------------
     def open_extract(self):
-        self.fname = filedialog.askopenfile(title="PDF Toolbox Document Browser", initialdir=constants.pdf_dir, filetypes=(("PDF Files", "*.pdf"), ("XPS Files", "*.*xps"), ("Epub Files", "*.epub"), ("Fiction Books", "*.fb2"), ("Comic Books", "*.cbz"), ("HTML", "*.htm*")))
+        self.fname = filedialog.askopenfile(
+            title="PDF Toolbox Document Browser", 
+            initialdir=constants.pdf_dir, 
+            filetypes=(
+                ("PDF Files", "*.pdf"), 
+                ("XPS Files", "*.*xps"), 
+                ("Epub Files", "*.epub"), 
+                ("Fiction Books", "*.fb2"), 
+                ("Comic Books", "*.cbz"), 
+                ("HTML", "*.htm*")
+                )
+            )
         if not self.fname:
             messagebox.showerror(title="Cancelling.", message="No file chosen.")
             return
@@ -73,9 +86,11 @@ class ExtractPDF(Frame):
         self.max_height = self.pdf_preview.winfo_screenheight() - 150
         self.max_size = (self.max_width, self.max_height)
         self.cur_page = 0
+        self.zoom = False
+        self.zoom_on = False
         self.data, self.clip_pos = self.get_page(
             self.cur_page,  # Read first page.
-            zoom=False,  # Not zooming yet.
+            zoom=self.zoom,  # Not zooming yet.
             max_size=self.max_size,  # Image max dimensions.
             )
         self.pdf_page_data = PhotoImage(data=self.data)
@@ -142,8 +157,6 @@ class ExtractPDF(Frame):
             )
         self.pdf_page_data = PhotoImage(data=self.data)
         self.pdf_page_img.configure(image=self.pdf_page_data, text=None)
-        self.old_page = self.cur_page
-        self.old_zoom = False
 
     def prev_page(self):
         self.cur_page -= 1
@@ -159,9 +172,26 @@ class ExtractPDF(Frame):
             )
         self.pdf_page_data = PhotoImage(data=self.data)
         self.pdf_page_img.configure(image=self.pdf_page_data, text=None)
-        self.old_page = self.cur_page
-        self.old_zoom = False
-        # self.zoom_active = self.zoom_pressed or self.zoom
+
+    def toggle_zoom(self):
+        if self.zoom_on == False:
+            self.zoom_on = True
+            self.zoom = (self.clip.tl, 0, 0)
+            self.data, self.clip_pos = self.get_page(
+                self.cur_page, 
+                zoom=self.zoom, 
+                max_size=self.max_size
+                )
+        elif self.zoom_on == True:
+            self.zoom_on = False
+            self.zoom = False
+            self.data, self.clip_pos = self.get_page(
+                self.cur_page, 
+                zoom=self.zoom, 
+                max_size=self.max_size
+                )
+        self.pdf_page_data = PhotoImage(data=self.data)
+        self.pdf_page_img.configure(image=self.pdf_page_data, text=None)
 
 # ------------------------------------------------------------------------------
 
