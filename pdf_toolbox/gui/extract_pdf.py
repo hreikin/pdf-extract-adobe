@@ -12,6 +12,8 @@ class ExtractPDF(Frame):
         Frame.__init__(self, master)
         self.master = master
         self.myfont = font.Font(family="Ubuntu", size=16)
+        self.zoom = False
+        self.zoom_on = False
         self.init_window()
 
     def init_window(self):
@@ -40,17 +42,27 @@ class ExtractPDF(Frame):
         self.top_bar = Frame(self.preview_area, relief="groove", borderwidth=5)
         self.open_btn = Button(self.top_bar, text="Open", command=self.open_extract)
         self.open_btn.pack(side="left", padx=0, pady=0)
-        self.next_btn = Button(self.top_bar, text="Next", command=self.next_page)
+        self.next_btn = Button(self.top_bar, text="Next", state="disabled", command=self.next_page)
         self.next_btn.pack(side="left", padx=0, pady=0)
-        self.prev_btn = Button(self.top_bar, text="Prev", command=self.prev_page)
+        self.prev_btn = Button(self.top_bar, text="Prev", state="disabled", command=self.prev_page)
         self.prev_btn.pack(side="left", padx=0, pady=0)
-        self.zoom_btn = Button(self.top_bar, text="Zoom", command=self.toggle_zoom)
+        self.zoom_btn = Button(self.top_bar, text="Zoom", state="disabled", command=self.toggle_zoom)
         self.zoom_btn.pack(side="left", padx=0, pady=0)
+        # self.left_btn = Button(self.top_bar, text="Left", command=self.zoom_left)
+        # self.left_btn.pack(side="left", padx=0, pady=0)
+        # self.right_btn = Button(self.top_bar, text="Right", command=self.zoom_right)
+        # self.right_btn.pack(side="left", padx=0, pady=0)
+        # self.up_btn = Button(self.top_bar, text="Up", command=self.zoom_up)
+        # self.up_btn.pack(side="left", padx=0, pady=0)
+        # self.down_btn = Button(self.top_bar, text="Down", command=self.zoom_down)
+        # self.down_btn.pack(side="left", padx=0, pady=0)
         self.top_bar.pack(side="top", fill="x")
 
         self.pdf_preview = Frame(self.preview_area, relief="groove", borderwidth=5)
         self.pdf_page_img = Label(self.pdf_preview, text="Open a PDF to view or manually extract content.", image=None)
-        self.pdf_page_img.pack(fill="both", expand=1)
+        self.pdf_page_img.pack(side="left", fill="both", expand=1)
+        self.pdf_preview_vert_scroll = Scrollbar(self.pdf_page_img, orient="vertical")
+        self.pdf_preview_vert_scroll.pack(side="right", fill="y")
         self.pdf_preview.pack(side="bottom", fill="both", expand=1)
 
         self.pw.add(self.extract_options)
@@ -86,8 +98,6 @@ class ExtractPDF(Frame):
         self.max_height = self.pdf_preview.winfo_screenheight() - 150
         self.max_size = (self.max_width, self.max_height)
         self.cur_page = 0
-        self.zoom = False
-        self.zoom_on = False
         self.data, self.clip_pos = self.get_page(
             self.cur_page,  # Read first page.
             zoom=self.zoom,  # Not zooming yet.
@@ -95,6 +105,9 @@ class ExtractPDF(Frame):
             )
         self.pdf_page_data = PhotoImage(data=self.data)
         self.pdf_page_img.configure(image=self.pdf_page_data, text=None)
+        self.next_btn.configure(state="normal")
+        self.prev_btn.configure(state="normal")
+        self.zoom_btn.configure(state="normal")
 
 # ------------------------------------------------------------------------------
 # Read the page data.
@@ -150,6 +163,8 @@ class ExtractPDF(Frame):
             self.cur_page -= self.page_count
         while self.cur_page < 0:  # pages < 0 are valid but look bad
             self.cur_page += self.page_count
+        # self.zoom = False
+        self.zoom_on = False
         self.data, self.clip_pos = self.get_page(
             self.cur_page, 
             zoom=False, 
@@ -165,6 +180,8 @@ class ExtractPDF(Frame):
             self.cur_page -= self.page_count
         while self.cur_page < 0:  # pages < 0 are valid but look bad
             self.cur_page += self.page_count
+        # self.zoom = False
+        self.zoom_on = False
         self.data, self.clip_pos = self.get_page(
             self.cur_page, 
             zoom=False, 
@@ -176,22 +193,104 @@ class ExtractPDF(Frame):
     def toggle_zoom(self):
         if self.zoom_on == False:
             self.zoom_on = True
-            self.zoom = (self.clip.tl, 0, 0)
+            # self.zoom = (self.clip.tl, 0, 0)
+            self.zoom_width = self.max_width * 2
+            self.zoom_height = self.max_height * 2
+            self.zoom_max_size = (self.zoom_width, self.zoom_height)
             self.data, self.clip_pos = self.get_page(
                 self.cur_page, 
-                zoom=self.zoom, 
-                max_size=self.max_size
+                zoom=False, 
+                max_size=self.zoom_max_size
                 )
         elif self.zoom_on == True:
             self.zoom_on = False
-            self.zoom = False
             self.data, self.clip_pos = self.get_page(
                 self.cur_page, 
-                zoom=self.zoom, 
+                zoom=False, 
                 max_size=self.max_size
                 )
         self.pdf_page_data = PhotoImage(data=self.data)
         self.pdf_page_img.configure(image=self.pdf_page_data, text=None)
+
+    # def toggle_zoom(self):
+    #     if self.zoom_on == False:
+    #         self.zoom_on = True
+    #         self.zoom = (self.clip.tl, 0, 0)
+    #         self.data, self.clip_pos = self.get_page(
+    #             self.cur_page, 
+    #             zoom=self.zoom, 
+    #             max_size=self.max_size
+    #             )
+    #     elif self.zoom_on == True:
+    #         self.zoom_on = False
+    #         self.zoom = False
+    #         self.data, self.clip_pos = self.get_page(
+    #             self.cur_page, 
+    #             zoom=self.zoom, 
+    #             max_size=self.max_size
+    #             )
+    #     self.pdf_page_data = PhotoImage(data=self.data)
+    #     self.pdf_page_img.configure(image=self.pdf_page_data, text=None)
+    
+    # def zoom_left(self):
+    #     print(self.zoom)
+    #     self.a = self.zoom[0]
+    #     self.b = -1
+    #     self.c = self.zoom[2]
+    #     self.zoom = (self.a, self.b, self.c)
+    #     print(self.zoom)
+    #     self.data, self.clip_pos = self.get_page(
+    #         self.cur_page, 
+    #         zoom=self.zoom, 
+    #         max_size=self.max_size
+    #         )
+    #     self.pdf_page_data = PhotoImage(data=self.data)
+    #     self.pdf_page_img.configure(image=self.pdf_page_data, text=None)        
+
+    # def zoom_right(self):
+    #     print(self.zoom)
+    #     self.a = self.zoom[0]
+    #     self.b = 1
+    #     self.c = self.zoom[2]
+    #     self.zoom = (self.a, self.b, self.c)
+    #     print(self.zoom)
+    #     self.data, self.clip_pos = self.get_page(
+    #         self.cur_page, 
+    #         zoom=self.zoom, 
+    #         max_size=self.max_size
+    #         )
+    #     self.pdf_page_data = PhotoImage(data=self.data)
+    #     self.pdf_page_img.configure(image=self.pdf_page_data, text=None)
+
+    # def zoom_up(self):
+    #     print(self.zoom)
+    #     self.a = self.zoom[0]
+    #     self.b = self.zoom[1]
+    #     self.c = -1
+    #     self.zoom = (self.a, self.b, self.c)
+    #     print(self.zoom)
+    #     self.data, self.clip_pos = self.get_page(
+    #         self.cur_page, 
+    #         zoom=self.zoom, 
+    #         max_size=self.max_size
+    #         )
+    #     self.pdf_page_data = PhotoImage(data=self.data)
+    #     self.pdf_page_img.configure(image=self.pdf_page_data, text=None)
+
+    # def zoom_down(self):
+    #     print(self.zoom)
+    #     self.a = self.zoom[0]
+    #     self.b = self.zoom[1]
+    #     self.c = 1
+    #     self.zoom = (self.a, self.b, self.c)
+    #     print(self.zoom)
+    #     self.data, self.clip_pos = self.get_page(
+    #         self.cur_page, 
+    #         zoom=self.zoom, 
+    #         max_size=self.max_size
+    #         )
+    #     self.pdf_page_data = PhotoImage(data=self.data)
+    #     self.pdf_page_img.configure(image=self.pdf_page_data, text=None)
 
 # ------------------------------------------------------------------------------
 
