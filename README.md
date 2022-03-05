@@ -1,10 +1,10 @@
-# Python Content Creator
-> PCC is in development so things will break regularly until a solid base for 
+# PDF Toolbox
+> PDF Toolbox is in development so things will break regularly until a solid base for 
 > the program has been created.
 
-Python Content Creator (PCC) aims to be an all round content extraction, 
-conversion and creation program. The goal is to extract content from various 
-file formats and store it in a database for use in other document creation. 
+PDF Toolbox aims to be a PDF content extraction, conversion and creation program. The 
+goal is to extract content via various methods and store it in a database for use in 
+other document creation. 
 
 This should hopefully allow easier conversion to other formats and also let you 
 create new documents using any text, tables, pictures, etc you may already have 
