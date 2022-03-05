@@ -21,18 +21,18 @@ class ExtractPDF(Frame):
         self.extract_options = Frame(self.pw)
 
         self.adobe_api = Frame(self.extract_options, relief="groove", borderwidth=5)
-        self.some_text = Label(self.adobe_api, text="This is the Adobe options area.")
-        self.some_text.pack(fill="x", expand=1)
+        self.adobe_some_text = Label(self.adobe_api, text="This is the Adobe options area.")
+        self.adobe_some_text.pack(fill="x", expand=1)
         self.adobe_api.pack(fill="both", expand=1)
 
         self.pymupdf_extract = Frame(self.extract_options, relief="groove", borderwidth=5)
-        self.some_text = Label(self.pymupdf_extract, text="This is the PyMuPDF options area.")
-        self.some_text.pack(fill="x", expand=1)
+        self.pymupdf_some_text = Label(self.pymupdf_extract, text="This is the PyMuPDF options area.")
+        self.pymupdf_some_text.pack(fill="x", expand=1)
         self.pymupdf_extract.pack(fill="both", expand=1)
 
         self.ocr_extract = Frame(self.extract_options, relief="groove", borderwidth=5)
-        self.some_text = Label(self.ocr_extract, text="This is the OCR options area.")
-        self.some_text.pack(fill="x", expand=1)
+        self.ocr_some_text = Label(self.ocr_extract, text="This is the OCR options area.")
+        self.ocr_some_text.pack(fill="x", expand=1)
         self.ocr_extract.pack(fill="both", expand=1)
 
         self.preview_area = Frame(self.pw)
@@ -70,7 +70,7 @@ class ExtractPDF(Frame):
 
         self.title = f"PyMuPDF display of {self.fname}, pages: {self.page_count}"
         self.max_width = self.pdf_preview.winfo_screenwidth() - 20
-        self.max_height = self.pdf_preview.winfo_screenheight() - 135
+        self.max_height = self.pdf_preview.winfo_screenheight() - 150
         self.max_size = (self.max_width, self.max_height)
         self.cur_page = 0
         self.data, self.clip_pos = self.get_page(
