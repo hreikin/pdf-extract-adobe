@@ -40,10 +40,10 @@ class ExtractPDF(Frame):
         self.top_bar = Frame(self.preview_area, relief="groove", borderwidth=5)
         self.open_btn = Button(self.top_bar, text="Open", command=self.open_extract)
         self.open_btn.pack(side="left", padx=0, pady=0)
-        self.prev_btn = Button(self.top_bar, text="Next")
-        self.prev_btn.pack(side="left", padx=0, pady=0)
-        self.next_btn = Button(self.top_bar, text="Prev")
+        self.next_btn = Button(self.top_bar, text="Next", command=self.next_page)
         self.next_btn.pack(side="left", padx=0, pady=0)
+        self.prev_btn = Button(self.top_bar, text="Prev", command=self.prev_page)
+        self.prev_btn.pack(side="left", padx=0, pady=0)
         self.top_bar.pack(side="top", fill="x")
 
         self.pdf_preview = Frame(self.preview_area, relief="groove", borderwidth=5)
@@ -77,7 +77,7 @@ class ExtractPDF(Frame):
             self.cur_page,  # Read first page.
             zoom=False,  # Not zooming yet.
             max_size=self.max_size,  # Image max dimensions.
-        )
+            )
         self.pdf_page_data = PhotoImage(data=self.data)
         self.pdf_page_img.configure(image=self.pdf_page_data, text=None)
 
@@ -128,6 +128,40 @@ class ExtractPDF(Frame):
         self.img = self.pix.tobytes("ppm")  # make PPM image from pixmap for tkinter
         return self.img, self.clip.tl  # return image, clip position
 
+    def next_page(self):
+        self.cur_page += 1
+        # sanitize page number
+        while self.cur_page >= self.page_count:  # wrap around
+            self.cur_page -= self.page_count
+        while self.cur_page < 0:  # pages < 0 are valid but look bad
+            self.cur_page += self.page_count
+        self.data, self.clip_pos = self.get_page(
+            self.cur_page, 
+            zoom=False, 
+            max_size=self.max_size
+            )
+        self.pdf_page_data = PhotoImage(data=self.data)
+        self.pdf_page_img.configure(image=self.pdf_page_data, text=None)
+        self.old_page = self.cur_page
+        self.old_zoom = False
+
+    def prev_page(self):
+        self.cur_page -= 1
+        # sanitize page number
+        while self.cur_page >= self.page_count:  # wrap around
+            self.cur_page -= self.page_count
+        while self.cur_page < 0:  # pages < 0 are valid but look bad
+            self.cur_page += self.page_count
+        self.data, self.clip_pos = self.get_page(
+            self.cur_page, 
+            zoom=False, 
+            max_size=self.max_size
+            )
+        self.pdf_page_data = PhotoImage(data=self.data)
+        self.pdf_page_img.configure(image=self.pdf_page_data, text=None)
+        self.old_page = self.cur_page
+        self.old_zoom = False
+        # self.zoom_active = self.zoom_pressed or self.zoom
 
 # ------------------------------------------------------------------------------
 
