@@ -281,7 +281,7 @@ Project Link: [https://github.com/hreikin/pdf-toolbox](https://github.com/hreiki
 [issues-shield]: https://img.shields.io/github/issues/hreikin/pdf-toolbox.svg?style=for-the-badge
 [issues-url]: https://github.com/hreikin/pdf-toolbox/issues
 [license-shield]: https://img.shields.io/github/license/hreikin/pdf-toolbox.svg?style=for-the-badge
-[license-url]: https://github.com/hreikin/pdf-toolbox/blob/master/LICENSE.txt
+[license-url]: https://github.com/hreikin/pdf-toolbox/blob/main/LICENSE.txt
 [commit-shield]: https://img.shields.io/github/commit-activity/m/hreikin/pdf-toolbox?style=for-the-badge
 [commit-url]: https://github.com/hreikin/pdf-toolbox/graphs/commit-activity
 <!-- [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555 -->
