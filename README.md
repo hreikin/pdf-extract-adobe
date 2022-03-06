@@ -205,24 +205,18 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 <!-- ROADMAP -->
 ## Roadmap
 
-### Overview
-Three sections to the program: 
-
-- extraction
-- conversion
-- creation
-
-**Related Issues**
-
-- [ ] #2
-- [ ] #3
-- [x] #4
-- [ ] #5
-- [ ] #6
-- [ ] #7
-- [ ] #11 
-
 See the [open issues](https://github.com/hreikin/pdf-toolbox/issues) for a full list of proposed features (and known issues).
+
+<!-- **Related Issues** -->
+
+- [ ] [Database](https://github.com/hreikin/pdf-toolbox/issues/2)
+- [ ] [Extraction](https://github.com/hreikin/pdf-toolbox/issues/3)
+- [x] [Comparison Score](https://github.com/hreikin/pdf-toolbox/issues/4)
+- [ ] [Conversion](https://github.com/hreikin/pdf-toolbox/issues/5)
+- [ ] [Creation](https://github.com/hreikin/pdf-toolbox/issues/6)
+- [ ] [Merge & Combine](https://github.com/hreikin/pdf-toolbox/issues/7)
+- [ ] [GUI](https://github.com/hreikin/pdf-toolbox/issues/11) 
+
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
