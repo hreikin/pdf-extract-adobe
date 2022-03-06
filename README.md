@@ -17,6 +17,8 @@
 *** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
 *** https://www.markdownguide.org/basic-syntax/#reference-style-links
 -->
+# PDF Toolbox
+
 [![Commits][commit-shield]][commit-url]
 [![Contributors][contributors-shield]][contributors-url]
 [![Issues][issues-shield]][issues-url]
@@ -53,7 +55,6 @@
 </div> -->
 
 
-
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 <!-- Project Screenshot -->
@@ -74,16 +75,14 @@ the program has been created and an initial version released.
 <br />
 <br />
 <a href="https://github.com/hreikin/pdf-toolbox">View Demo</a> -->
-<ol>
-  <ul>
-    <li>
-      <a href="https://github.com/hreikin/pdf-toolbox/issues">Report Bug</a>
-    </li>
-    <li>
-      <a href="https://github.com/hreikin/pdf-toolbox/issues">Request Feature</a>
-    </li>
-  </ul>
-</ol>
+<ul>
+  <li>
+    <a href="https://github.com/hreikin/pdf-toolbox/issues">Report Bug</a>
+  </li>
+  <li>
+    <a href="https://github.com/hreikin/pdf-toolbox/issues">Request Feature</a>
+  </li>
+</ul>
 <!-- TABLE OF CONTENTS -->
 <details>
   <summary>Table of Contents</summary>
