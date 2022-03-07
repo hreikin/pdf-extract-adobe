@@ -11,7 +11,6 @@ cssselect==1.1.0
 definitions==0.2.0
 docopt==0.6.2
 Flask==2.0.3
-grip==4.6.0
 h2==3.2.0
 hpack==3.0.0
 hyperframe==5.2.0
@@ -62,6 +61,7 @@ Scrapy==2.5.1
 service-identity==21.1.0
 six==1.15.0
 tabulate==0.8.9
+tkinterweb==3.12.2
 toml==0.10.2
 Twisted==22.1.0
 typing-extensions==4.1.0
