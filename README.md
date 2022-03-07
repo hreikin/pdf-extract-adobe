@@ -22,7 +22,7 @@
 [![Commits][commit-shield]][commit-url]
 [![Contributors][contributors-shield]][contributors-url]
 [![Issues][issues-shield]][issues-url]
-[![MIT License][license-shield]][license-url]
+[![License][license-shield]][license-url]
 <!-- [![Forks][forks-shield]][forks-url] -->
 <!-- [![Stargazers][stars-shield]][stars-url] -->
 <!-- [![LinkedIn][linkedin-shield]][linkedin-url] -->
@@ -111,20 +111,12 @@ the program has been created and an initial version released.
   </ol>
 </details>
 
-<p align="right">(<a href="#top">back to top</a>)</p>
-
-
-
 ### Built With
 
 * [Python3](https://www.python.org/)
 * [PyMuPDF](https://github.com/pymupdf/PyMuPDF)
 * [PyTesseract](https://github.com/madmaze/pytesseract)
 * [Adobe PDF Extract API](https://developer.adobe.com/document-services/apis/pdf-extract/)
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
-
 
 <!-- GETTING STARTED -->
 ## Getting Started
