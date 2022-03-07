@@ -3,7 +3,7 @@ from utils import constants
 
 from pathlib import Path
 from tkinter import *
-from tkinter import font, filedialog
+from tkinter import font, filedialog, simpledialog
 from tkinter import messagebox as mbox
 from tkinter.ttk import Notebook
 
@@ -70,12 +70,78 @@ class PDFToolbox(Frame):
         self.file_menu.add_separator()
         self.file_menu.add_command(label="Exit", command=self.quit)
         self.main_menu.add_cascade(label="File", menu=self.file_menu)
+
+        self.edit_menu = Menu(self.main_menu)
+        self.edit_menu.add_command(label="Copy", command=self.copy, accelerator="Ctrl+C")
+        self.edit_menu.add_command(label="Cut", command=self.cut, accelerator="Ctrl+X")
+        self.edit_menu.add_command(label="Paste", command=self.paste, accelerator="Ctrl+V")
+        self.edit_menu.add_separator()
+        self.edit_menu.add_command(label="Undo", command=self.undo, accelerator="Ctrl+Z")
+        self.edit_menu.add_command(label="Redo", command=self.redo, accelerator="Ctrl+Y")
+        self.edit_menu.add_separator()
+        self.edit_menu.add_command(label="Find", command=self.find, accelerator="Ctrl+F")
+        self.edit_menu.add_command(label="Select All", command=self.select_all, accelerator="Ctrl+A")
+        self.main_menu.add_cascade(label="Edit", menu=self.edit_menu)
+
+        self.create_area.text_area.bind_all("<Control-z>", self.undo)
+        self.create_area.text_area.bind_all("<Control-y>", self.redo)
+        self.create_area.text_area.bind_all("<Control-f>", self.find)
+        self.create_area.text_area.bind_all("<Control-a>", self.select_all)
+
+        self.right_click = Menu(self.create_area.text_area)
+        self.right_click.add_command(label="Copy", command=self.copy, accelerator="Ctrl+C")
+        self.right_click.add_command(label="Cut", command=self.cut, accelerator="Ctrl+X")
+        self.right_click.add_command(label="Paste", command=self.paste, accelerator="Ctrl+V")
+        self.right_click.add_separator()
+        self.right_click.add_command(label="Undo", command=self.undo, accelerator="Ctrl+Z")
+        self.right_click.add_command(label="Redo", command=self.redo, accelerator="Ctrl+Y")
+        self.right_click.add_separator()
+        self.right_click.add_command(label="Find", command=self.find, accelerator="Ctrl+F")
+        self.right_click.add_command(label="Select All", command=self.select_all, accelerator="Ctrl+A")
+
+        self.create_area.text_area.bind("<Button-3>", self.popup)
+
         self.master.config(menu=self.main_menu)
 
-    def on_input_change(self, event):
-        """This is currently unfinished."""
-        self.text_area.edit_modified(0)
-        pass
+    def popup(self, event):
+        self.right_click.post(event.x_root, event.y_root)
+
+    def copy(self, *args):
+        sel = self.create_area.text_area.selection_get()
+        self.clipboard = sel
+
+    def cut(self, *args):
+        sel = self.create_area.text_area.selection_get()
+        self.clipboard = sel
+        self.create_area.text_area.delete(SEL_FIRST, SEL_LAST)
+
+    def paste(self, *args):
+        self.create_area.text_area.insert(INSERT, self.clipboard)
+
+    def select_all(self, *args):
+        self.create_area.text_area.tag_add(SEL, "1.0", END)
+        self.create_area.text_area.mark_set(0.0, END)
+        self.create_area.text_area.see(INSERT)
+
+    def undo(self, *args):
+        self.create_area.text_area.edit_undo()
+
+    def redo(self, *args):
+        self.create_area.text_area.edit_redo()
+
+    def find(self, *args):
+        self.create_area.text_area.tag_remove('found', '1.0', END)
+        target = simpledialog.askstring('Find', 'Search String:')
+
+        if target:
+            idx = '1.0'
+            while 1:
+                idx = self.create_area.text_area.search(target, idx, nocase=1, stopindex=END)
+                if not idx: break
+                lastidx = '%s+%dc' % (idx, len(target))
+                self.create_area.text_area.tag_add('found', idx, lastidx)
+                idx = lastidx
+            self.create_area.text_area.tag_config('found', foreground='white', background='blue')
 
     def open_md_file(self):
         """Open a file and clear/insert the text into the text_area."""
