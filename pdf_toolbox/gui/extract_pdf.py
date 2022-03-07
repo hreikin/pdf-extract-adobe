@@ -1,4 +1,4 @@
-from utilities import constants
+from utils import constants
 from gui import scroll_frame
 
 import fitz

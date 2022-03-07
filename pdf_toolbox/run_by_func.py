@@ -1,4 +1,4 @@
-import extraction.adobe_json, processing.processing, extraction.json_to_sqlite, utilities.utilities, conversion.convert, utilities.constants, extraction.extraction, extraction.confidence
+import extraction.adobe_json, processing.processing, extraction.json_to_sqlite, utils.utilities, conversion.convert, utils.constants, extraction.extraction, extraction.confidence
 import logging
 
 from pathlib import Path
@@ -28,12 +28,12 @@ logging.getLogger('').addHandler(console)
 ################################################################################
 
 new_headings = ["Title"]
-for item in utilities.constants.headings:
+for item in utils.constants.headings:
     new_headings.append(item)
     for i in range(0, 101):
         new_headings.append(f"{item}[{i}]")
 
-utilities.constants.headings = new_headings
+utils.constants.headings = new_headings
 
 # Creates Json Schema zip file with Adobe API.
 source_path = "../src/pdfs/"
@@ -44,7 +44,7 @@ extraction.adobe_json.extract_pdf_adobe(source_path)
 # # requests are complete. Can be used on its own.
 # zip_source = "../src/zips/"
 # logging.info("Extracting JSON Schema from zip files.")
-# utilities.utilities.extract_from_zip(zip_source)
+# utils.utilities.extract_from_zip(zip_source)
 
 # Creates list of PDF/URL pairs.
 logging.info("Creating PDF/URL list.")
@@ -57,7 +57,7 @@ src = "../src/json/"
 logging.info("Manipulating Json and creating SQLite tables.")
 extraction.json_to_sqlite.split_main_json_file(src)
 
-src_dir = Path(utilities.constants.json_dir).resolve()
+src_dir = Path(utils.constants.json_dir).resolve()
 for directory in src_dir.iterdir():
     conversion.convert.convert_db_markdown(directory.resolve())
     conversion.convert.convert_db_markdown(directory.resolve(), with_imgs=False)

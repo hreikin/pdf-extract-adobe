@@ -1,17 +1,13 @@
-from gui import extract_pdf
-from utilities import constants
+from gui import extract_pdf, create_pdf
+from utils import constants
 
-from functools import partial
 from pathlib import Path
 from tkinter import *
 from tkinter import font, filedialog
 from tkinter import messagebox as mbox
-from tkinter.scrolledtext import ScrolledText
 from tkinter.ttk import Notebook
 
-import multiprocessing
 import logging
-import grip
 
 ##################################### LOGS #####################################
 # Initialize the logger and specify the level of logging. This will log "DEBUG" 
@@ -65,11 +61,12 @@ class PDFToolbox(Frame):
         self.tabs.pack(fill="both", expand=1)
 
         self.extract_area = extract_pdf.ExtractPDF(self.extract_tab)
+        self.create_area = create_pdf.CreatePDF(self.create_tab)
 
         self.main_menu = Menu(self)
         self.file_menu = Menu(self.main_menu)
-        self.file_menu.add_command(label="Open", command=self.open_file)
-        self.file_menu.add_command(label="Save as", command=self.save_file)
+        self.file_menu.add_command(label="Open Markdown File", command=self.open_md_file)
+        self.file_menu.add_command(label="Save as", command=self.save_md_file)
         self.file_menu.add_separator()
         self.file_menu.add_command(label="Exit", command=self.quit)
         self.main_menu.add_cascade(label="File", menu=self.file_menu)
@@ -80,24 +77,24 @@ class PDFToolbox(Frame):
         self.text_area.edit_modified(0)
         pass
 
-    def open_file(self):
+    def open_md_file(self):
         """Open a file and clear/insert the text into the text_area."""
         open_filename = filedialog.askopenfilename(filetypes=(("Markdown File", "*.md , *.mdown , *.markdown"), ("Text File", "*.txt"), ("All Files", "*.*")), initialdir=constants.src_dir)
         if open_filename:
             try:
                 with open(open_filename, "r") as stream:
                     open_filename_contents = stream.read()
-                self.text_area.delete(1.0, END)
-                self.text_area.insert(END, open_filename_contents)
+                self.create_area.text_area.delete(1.0, END)
+                self.create_area.text_area.insert(END, open_filename_contents)
                 constants.cur_file = Path(open_filename)
-                self.pw_top.tab(self.text_area, text=constants.cur_file.name)
-                self.master.title(f"Python Content Creator - {constants.cur_file.name}")
+                # self.pw_top.tab(self.create_area.text_area, text=constants.cur_file.name)
+                # self.master.title(f"Python Content Creator - {constants.cur_file.name}")
             except:
                 mbox.showerror(title="Error", message=f"Error Opening Selected File\n\nThe file you selected: {open_filename} can not be opened!")
     
-    def save_file(self):
+    def save_md_file(self):
         """Saves the file with the given filename."""
-        file_data = self.text_area.get("1.0" , END)
+        file_data = self.create_area.text_area.get("1.0" , END)
         save_filename = filedialog.asksaveasfilename(filetypes = (("Markdown File", "*.md"), ("Text File", "*.txt")) , title="Save Markdown File")
         if save_filename:
             try:
@@ -106,21 +103,21 @@ class PDFToolbox(Frame):
             except:
                 mbox.showerror(title="Error", message=f"Error Saving File\n\nThe file: {save_filename} can not be saved!")
 
-    def start_preview(self):
-        """Starts the Grip server using multiprocessing library."""
-        self.serve_grip = partial(grip.serve, path=constants.cur_file.resolve(), browser=True)
-        self.preview_thread = multiprocessing.Process(target=self.serve_grip)
-        self.preview_thread.start()
+    # def start_preview(self):
+    #     """Starts the Grip server using multiprocessing library."""
+    #     self.serve_grip = partial(grip.serve, path=constants.cur_file.resolve(), browser=True)
+    #     self.preview_thread = multiprocessing.Process(target=self.serve_grip)
+    #     self.preview_thread.start()
 
-    def stop_preview(self):
-        """Stops the Grip server."""
-        self.preview_thread.terminate()
-        # pass
+    # def stop_preview(self):
+    #     """Stops the Grip server."""
+    #     self.preview_thread.terminate()
+    #     # pass
 
-    def adobe_browse_folder(self):
-        """Browse for a folder and set the Entry field to the chosen folder."""
-        pdf_dir = filedialog.askdirectory(initialdir=constants.src_dir)
-        self.adobe_request_ent_val.set(pdf_dir)
+    # def adobe_browse_folder(self):
+    #     """Browse for a folder and set the Entry field to the chosen folder."""
+    #     pdf_dir = filedialog.askdirectory(initialdir=constants.src_dir)
+    #     self.adobe_request_ent_val.set(pdf_dir)
 
 # class PDFToolbox(Frame):
 #     """Create a subclass of Frame for our window."""

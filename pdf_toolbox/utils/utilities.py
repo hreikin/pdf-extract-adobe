@@ -1,4 +1,4 @@
-import zipfile, logging, utilities.constants
+import zipfile, logging, utils.constants
 
 from pathlib import Path
 
@@ -11,7 +11,7 @@ def extract_from_zip(zip_source):
     :param output_path: The directory to extract the zip contents in to.
     """
     # Extracts Json Schema from zip file.
-    output_path = utilities.constants.json_dir
+    output_path = utils.constants.json_dir
     Path(output_path).mkdir(parents=True, exist_ok=True)
     zip_file_list = sorted(Path(zip_source).rglob("*.zip"))
     zip_amount = len(zip_file_list)
