@@ -56,8 +56,8 @@ class PDFToolbox(Frame):
 
         self.extract_tab = Frame(self.tabs)
         self.create_tab = Frame(self.tabs)
-        self.tabs.add(self.extract_tab, text="Extract")
         self.tabs.add(self.create_tab, text="Create")
+        self.tabs.add(self.extract_tab, text="Extract")
         self.tabs.pack(fill="both", expand=1)
 
         self.extract_area = extract_pdf.ExtractPDF(self.extract_tab)
