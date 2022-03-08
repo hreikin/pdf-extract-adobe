@@ -128,11 +128,11 @@ To get a local copy up and running follow these simple steps.
 * **Adobe**
   * Place `Adobe PDF Extract API` credentials in root of repository. Credentials are available from [Adobe](https://developer.adobe.com/document-services/apis/pdf-extract/) with a 1000 credit/six month free trial.
 * **Pillow/PIL**
-  * Install `Python Imaging Library` (or the `Pillow fork`) for your OS
+  * Install `Python Imaging Library` (or the `Pillow fork`) for your OS. Installation instructions available at the [Pillow](https://pillow.readthedocs.io/en/stable/installation.html) documentation.
 * **TesseractOCR**
-  * Install `Tesseract OCR` for your OS.
+  * Install `Tesseract OCR` for your OS. Installation instructions available at the [Tesseract OCR](https://github.com/tesseract-ocr/tesseract) github repository.
 * **MuPDF**
-  * Install `MuPDF` for your OS.
+  * Install `MuPDF` for your OS. Installation instructions available at the [MuPDF](https://mupdf.com) website.
 
 ### Installation
 
