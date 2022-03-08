@@ -60,45 +60,47 @@ class PDFToolbox(Frame):
         self.tabs.add(self.extract_tab, text="Extract")
         self.tabs.pack(fill="both", expand=1)
 
-        self.extract_area = extract_pdf.ExtractPDF(self.extract_tab)
         self.create_area = create_pdf.CreatePDF(self.create_tab)
+        self.create_area.open_btn.configure(command=self.open_md_file)
+        self.create_area.save_as_btn.configure(command=self.save_as_md_file)
+        self.create_area.save_btn.configure(command=self.save_md_file)
+
+        self.extract_area = extract_pdf.ExtractPDF(self.extract_tab)
 
         self.main_menu = Menu(self)
         self.file_menu = Menu(self.main_menu)
         self.file_menu.add_command(label="Open Markdown File", command=self.open_md_file)
-        self.file_menu.add_command(label="Save as", command=self.save_md_file)
+        self.file_menu.add_command(label="Save as", command=self.save_as_md_file)
+        self.file_menu.add_command(label="Save", command=self.save_md_file)
         self.file_menu.add_separator()
         self.file_menu.add_command(label="Exit", command=self.quit)
         self.main_menu.add_cascade(label="File", menu=self.file_menu)
 
         self.edit_menu = Menu(self.main_menu)
-        self.edit_menu.add_command(label="Copy", command=self.copy, accelerator="Ctrl+C")
-        self.edit_menu.add_command(label="Cut", command=self.cut, accelerator="Ctrl+X")
-        self.edit_menu.add_command(label="Paste", command=self.paste, accelerator="Ctrl+V")
+        self.edit_menu.add_command(label="Copy", command=lambda: self.focus_get().event_generate("<<Copy>>"), accelerator="Ctrl+C")
+        self.edit_menu.add_command(label="Cut", command=lambda: self.focus_get().event_generate("<<Cut>>"), accelerator="Ctrl+X")
+        self.edit_menu.add_command(label="Paste", command=lambda: self.focus_get().event_generate("<<Paste>>"), accelerator="Ctrl+V")
         self.edit_menu.add_separator()
-        self.edit_menu.add_command(label="Undo", command=self.undo, accelerator="Ctrl+Z")
-        self.edit_menu.add_command(label="Redo", command=self.redo, accelerator="Ctrl+Y")
+        self.edit_menu.add_command(label="Undo", command=lambda: self.focus_get().event_generate("<<Undo>>"), accelerator="Ctrl+Z")
+        self.edit_menu.add_command(label="Redo", command=lambda: self.focus_get().event_generate("<<Redo>>"), accelerator="Ctrl+Y")
         self.edit_menu.add_separator()
         self.edit_menu.add_command(label="Find", command=self.find, accelerator="Ctrl+F")
         self.edit_menu.add_command(label="Select All", command=self.select_all, accelerator="Ctrl+A")
         self.main_menu.add_cascade(label="Edit", menu=self.edit_menu)
 
-        self.create_area.text_area.bind_all("<Control-z>", self.undo)
-        self.create_area.text_area.bind_all("<Control-y>", self.redo)
-        self.create_area.text_area.bind_all("<Control-f>", self.find)
-        self.create_area.text_area.bind_all("<Control-a>", self.select_all)
-
         self.right_click = Menu(self.create_area.text_area)
-        self.right_click.add_command(label="Copy", command=self.copy, accelerator="Ctrl+C")
-        self.right_click.add_command(label="Cut", command=self.cut, accelerator="Ctrl+X")
-        self.right_click.add_command(label="Paste", command=self.paste, accelerator="Ctrl+V")
+        self.right_click.add_command(label="Copy", command=lambda: self.focus_get().event_generate("<<Copy>>"), accelerator="Ctrl+C")
+        self.right_click.add_command(label="Cut", command=lambda: self.focus_get().event_generate("<<Cut>>"), accelerator="Ctrl+X")
+        self.right_click.add_command(label="Paste", command=lambda: self.focus_get().event_generate("<<Paste>>"), accelerator="Ctrl+V")
         self.right_click.add_separator()
-        self.right_click.add_command(label="Undo", command=self.undo, accelerator="Ctrl+Z")
-        self.right_click.add_command(label="Redo", command=self.redo, accelerator="Ctrl+Y")
+        self.right_click.add_command(label="Undo", command=lambda: self.focus_get().event_generate("<<Undo>>"), accelerator="Ctrl+Z")
+        self.right_click.add_command(label="Redo", command=lambda: self.focus_get().event_generate("<<Redo>>"), accelerator="Ctrl+Y")
         self.right_click.add_separator()
         self.right_click.add_command(label="Find", command=self.find, accelerator="Ctrl+F")
         self.right_click.add_command(label="Select All", command=self.select_all, accelerator="Ctrl+A")
 
+        self.create_area.text_area.bind_all("<Control-f>", self.find)
+        self.create_area.text_area.bind_all("<Control-a>", self.select_all)
         self.create_area.text_area.bind("<Button-3>", self.popup)
 
         self.master.config(menu=self.main_menu)
@@ -106,28 +108,10 @@ class PDFToolbox(Frame):
     def popup(self, event):
         self.right_click.post(event.x_root, event.y_root)
 
-    def copy(self, *args):
-        sel = self.create_area.text_area.selection_get()
-        self.clipboard = sel
-
-    def cut(self, *args):
-        sel = self.create_area.text_area.selection_get()
-        self.clipboard = sel
-        self.create_area.text_area.delete(SEL_FIRST, SEL_LAST)
-
-    def paste(self, *args):
-        self.create_area.text_area.insert(INSERT, self.clipboard)
-
     def select_all(self, *args):
         self.create_area.text_area.tag_add(SEL, "1.0", END)
         self.create_area.text_area.mark_set(0.0, END)
         self.create_area.text_area.see(INSERT)
-
-    def undo(self, *args):
-        self.create_area.text_area.edit_undo()
-
-    def redo(self, *args):
-        self.create_area.text_area.edit_redo()
 
     def find(self, *args):
         self.create_area.text_area.tag_remove('found', '1.0', END)
@@ -145,29 +129,41 @@ class PDFToolbox(Frame):
 
     def open_md_file(self):
         """Open a file and clear/insert the text into the text_area."""
-        open_filename = filedialog.askopenfilename(filetypes=(("Markdown File", "*.md , *.mdown , *.markdown"), ("Text File", "*.txt"), ("All Files", "*.*")), initialdir=constants.src_dir)
-        if open_filename:
+        open_filename_md = filedialog.askopenfilename(filetypes=(("Markdown File", "*.md , *.mdown , *.markdown"), ("Text File", "*.txt"), ("All Files", "*.*")), initialdir=constants.src_dir)
+        if open_filename_md:
             try:
-                with open(open_filename, "r") as stream:
+                with open(open_filename_md, "r") as stream:
                     open_filename_contents = stream.read()
                 self.create_area.text_area.delete(1.0, END)
                 self.create_area.text_area.insert(END, open_filename_contents)
-                constants.cur_file = Path(open_filename)
-                # self.pw_top.tab(self.create_area.text_area, text=constants.cur_file.name)
-                # self.master.title(f"Python Content Creator - {constants.cur_file.name}")
+                constants.cur_file = Path(open_filename_md)
             except:
-                mbox.showerror(title="Error", message=f"Error Opening Selected File\n\nThe file you selected: {open_filename} can not be opened!")
+                mbox.showerror(title="Error", message=f"Error Opening Selected File\n\nThe file you selected: {open_filename_md} can not be opened!")
     
-    def save_md_file(self):
+    def save_as_md_file(self):
         """Saves the file with the given filename."""
-        file_data = self.create_area.text_area.get("1.0" , END)
-        save_filename = filedialog.asksaveasfilename(filetypes = (("Markdown File", "*.md"), ("Text File", "*.txt")) , title="Save Markdown File")
-        if save_filename:
+        self.file_data = self.create_area.text_area.get("1.0" , END)
+        self.save_filename_md = filedialog.asksaveasfilename(filetypes = (("Markdown File", "*.md"), ("Text File", "*.txt")) , title="Save Markdown File")
+        if self.save_filename_md:
             try:
-                with open(save_filename, "w") as stream:
-                    stream.write(file_data)
+                with open(self.save_filename_md, "w") as stream:
+                    stream.write(self.file_data)
             except:
-                mbox.showerror(title="Error", message=f"Error Saving File\n\nThe file: {save_filename} can not be saved!")
+                mbox.showerror(title="Error", message=f"Error Saving File\n\nThe file: {self.save_filename_md} can not be saved!")
+
+    def save_md_file(self):
+        """Quick saves the file with its current name, if it fails it calls the "Save As" function."""
+        self.file_data = self.create_area.text_area.get("1.0" , END)
+        try:
+            with open(constants.cur_file, "w") as stream:
+                stream.write(self.file_data)
+        except:
+            self.save_as_md_file()
+
+    # def adobe_browse_folder(self):
+    #     """Browse for a folder and set the Entry field to the chosen folder."""
+    #     pdf_dir = filedialog.askdirectory(initialdir=constants.src_dir)
+    #     self.adobe_request_ent_val.set(pdf_dir)
 
     # def start_preview(self):
     #     """Starts the Grip server using multiprocessing library."""
@@ -179,11 +175,6 @@ class PDFToolbox(Frame):
     #     """Stops the Grip server."""
     #     self.preview_thread.terminate()
     #     # pass
-
-    # def adobe_browse_folder(self):
-    #     """Browse for a folder and set the Entry field to the chosen folder."""
-    #     pdf_dir = filedialog.askdirectory(initialdir=constants.src_dir)
-    #     self.adobe_request_ent_val.set(pdf_dir)
 
 # class PDFToolbox(Frame):
 #     """Create a subclass of Frame for our window."""
@@ -330,11 +321,13 @@ class PDFToolbox(Frame):
 #         pdf_dir = filedialog.askdirectory(initialdir=constants.src_dir)
 #         self.adobe_request_ent_val.set(pdf_dir)
             
-# Instantiate the root window, set the screen size and instantiate the PCC window
-# before running the main loop.
-root = Tk()
-screen_height = root.winfo_screenheight()
-screen_width = root.winfo_screenwidth()
-root.geometry(f"{screen_width}x{screen_height}")
-app = PDFToolbox(root)
-app.mainloop()
+# Instantiate the root window, set the screen size and instantiate the PDF 
+# Toolbox window before running the main loop.
+if __name__ == "__main__":
+    root = Tk()
+    root.title("PDF Toolbox")
+    screen_height = root.winfo_screenheight()
+    screen_width = root.winfo_screenwidth()
+    root.geometry(f"{screen_width}x{screen_height}")
+    app = PDFToolbox(root)
+    app.mainloop()
