@@ -152,7 +152,8 @@ class PDFToolbox(Frame):
                 mbox.showerror(title="Error", message=f"Error Saving File\n\nThe file: {self.save_filename_md} can not be saved!")
 
     def save_md_file(self):
-        """Quick saves the file with its current name, if it fails it calls the "Save As" function."""
+        """Quick saves the file with its current name, if it fails because no 
+        name exists it calls the "save_as_md_file" function."""
         self.file_data = self.create_area.text_area.get("1.0" , END)
         try:
             with open(constants.cur_file, "w") as stream:
