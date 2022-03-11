@@ -1,5 +1,8 @@
+from functools import partial
+import multiprocessing
 from utils import constants
 from gui import scroll_frame
+from extraction import adobe_json
 
 import fitz
 from tkinter import *
@@ -24,46 +27,52 @@ class ExtractPDF(Frame):
         # Extraction options frame (left side) to hold all options.
         self.extract_options = Frame(self.pw)
         # Scrapy options. (Download/Scrape PDF Files)
-        self.scrapy_download = Frame(self.extract_options, relief="groove", borderwidth=5)
-        self.scrapy_some_text = Label(self.scrapy_download, text="This is the Scrapy options area.")
+        self.scrapy_download = Frame(self.extract_options, relief="groove", borderwidth=2, padx=10, pady=10)
+        self.scrapy_some_text = Label(self.scrapy_download, text="Scrape PDF Files From Website.")
         self.scrapy_some_text.pack(fill="x", expand=1)
         self.scrapy_download.pack(fill="both", expand=1)
         # Adobe API options.
-        self.adobe_api = Frame(self.extract_options, relief="groove", borderwidth=5)
-        self.adobe_request = Frame(self.adobe_api, relief="groove", borderwidth=3)
-        self.adobe_request.pack(fill="both", expand=1)
-        self.adobe_request_lbl = Label(self.adobe_request, text="Adobe PDF Extract API")
-        self.adobe_request_lbl.pack(fill="x", expand=1)
-        self.adobe_request_ent_multi_val = StringVar()
-        self.adobe_request_ent_multi = Entry(self.adobe_request, textvariable=self.adobe_request_ent_multi_val)
-        self.adobe_request_ent_multi.pack(fill="x", expand=1, side="left")
-        self.adobe_request_btn_multi = Button(self.adobe_request, text="Select Folder", command=self.adobe_browse_folder)
-        self.adobe_request_btn_multi.pack(fill="x", expand=1, side="left")
-        self.adobe_request_ent_single_val = StringVar()
-        self.adobe_request_ent_single = Entry(self.adobe_request, textvariable=self.adobe_request_ent_single_val)
-        self.adobe_request_ent_single.pack(fill="x", expand=1, side="left")
-        self.adobe_request_btn_single = Button(self.adobe_request, text="Select File", command=self.adobe_browse_file)
-        self.adobe_request_btn_single.pack(fill="x", expand=1, side="left")
-        self.adobe_request_btn_send = Button(self.adobe_request, text="Send Request(s)")
-        self.adobe_request_btn_send.pack(fill="x", expand=1, side="bottom")
-        # self.adobe_some_text = Label(self.adobe_api, text="This is the Adobe options area.")
-        # self.adobe_some_text.pack(fill="x", expand=1)
-        self.adobe_api.pack(fill="both", expand=1)
-        # PyMuPDF options. (Manual/Auto Extraction)
-        self.pymupdf_extract = Frame(self.extract_options, relief="groove", borderwidth=5)
-        self.pymupdf_some_text = Label(self.pymupdf_extract, text="This is the PyMuPDF options area.")
-        self.pymupdf_some_text.pack(fill="x", expand=1)
-        self.pymupdf_extract.pack(fill="both", expand=1)
-        # OCR options. (Manual/Auto Extraction)
-        self.ocr_extract = Frame(self.extract_options, relief="groove", borderwidth=5)
-        self.ocr_some_text = Label(self.ocr_extract, text="This is the OCR options area.")
-        self.ocr_some_text.pack(fill="x", expand=1)
-        self.ocr_extract.pack(fill="both", expand=1)
+        self.adobe_api = Frame(self.extract_options, relief="groove", borderwidth=2, padx=10, pady=10)
+        self.adobe_api_top = Frame(self.adobe_api)
+        self.adobe_api_top.pack(fill="both", expand=1)
+        self.adobe_api_middle = Frame(self.adobe_api)
+        self.adobe_api_middle.pack(fill="both", expand=1)
+        self.adobe_api_bottom = Frame(self.adobe_api)
+        self.adobe_api_bottom.pack(fill="both", expand=1)
+        self.adobe_api_left = Frame(self.adobe_api_middle)
+        self.adobe_api_left.pack(side="left", fill="both")
+        self.adobe_api_right = Frame(self.adobe_api_middle)
+        self.adobe_api_right.pack(side="right", fill="both")
+        self.adobe_api_lbl = Label(self.adobe_api_top, text="Adobe PDF Extract API")
+        self.adobe_api_lbl.pack(side="left", fill="x")
+        self.adobe_api_ent_multi_val = StringVar()
+        self.adobe_api_ent_multi = Entry(self.adobe_api_left, width=60, textvariable=self.adobe_api_ent_multi_val)
+        self.adobe_api_ent_multi.pack(fill="x", expand=1)
+        self.adobe_api_btn_multi = Button(self.adobe_api_right, text="Select Folder",width=20, command=self.adobe_browse_folder)
+        self.adobe_api_btn_multi.pack(fill="x")
+        self.adobe_api_ent_single_val = StringVar()
+        self.adobe_api_ent_single = Entry(self.adobe_api_left, width=60, textvariable=self.adobe_api_ent_single_val)
+        self.adobe_api_ent_single.pack(fill="x", expand=1)
+        self.adobe_api_btn_single = Button(self.adobe_api_right, text="Select File",width=20, command=self.adobe_browse_file)
+        self.adobe_api_btn_single.pack(fill="x")
+        self.adobe_api_btn_send = Button(self.adobe_api_bottom, text="Send Request(s)", command=self.send_adobe_request)
+        self.adobe_api_btn_send.pack(side="bottom", fill="x", expand=1)
+        self.adobe_api.pack(fill="both")
+        # PyMuPDF/OCR options. (Auto Extraction)
+        self.auto_extract = Frame(self.extract_options, relief="groove", borderwidth=2, padx=10, pady=10)
+        self.auto_some_text = Label(self.auto_extract, text="Auto Content Extraction.")
+        self.auto_some_text.pack(fill="x", expand=1)
+        self.auto_extract.pack(fill="both", expand=1)
+        # PyMuPDF/OCR options. (Manual Extraction)
+        self.manual_extract = Frame(self.extract_options, relief="groove", borderwidth=2, padx=10, pady=10)
+        self.manual_some_text = Label(self.manual_extract, text="Manual Content Extraction.")
+        self.manual_some_text.pack(fill="x", expand=1)
+        self.manual_extract.pack(fill="both", expand=1)
         # PDF preview area (right side) with controls for navigation, zoom, etc 
         # at the top and the scrollable PDF preview below.
         self.preview_area = Frame(self.pw)
         # Controls for navigation, zoom, etc.
-        self.top_bar = Frame(self.preview_area, relief="groove", borderwidth=5)
+        self.top_bar = Frame(self.preview_area, relief="groove", borderwidth=2, padx=10, pady=10)
         self.open_btn = Button(self.top_bar, text="Open", command=self.open_extract)
         self.open_btn.pack(side="left", padx=0, pady=0)
         self.next_btn = Button(self.top_bar, text="Next", state="disabled", command=self.next_page)
@@ -74,7 +83,7 @@ class ExtractPDF(Frame):
         self.zoom_btn.pack(side="left", padx=0, pady=0)
         self.top_bar.pack(side="top", fill="x")
         # Scrollable PDF preview area.
-        self.pdf_preview = scroll_frame.ScrollFrame(self.preview_area, relief="groove", borderwidth=5)
+        self.pdf_preview = scroll_frame.ScrollFrame(self.preview_area)
         self.pdf_page_img = Label(self.pdf_preview.view_port, text="Open a PDF to view or manually extract content.", image=None, pady=150)
         self.pdf_page_img.pack(side="left", fill="both", expand=1)
         self.pdf_preview.pack(side="bottom", fill="both", expand=1)
@@ -237,8 +246,8 @@ class ExtractPDF(Frame):
     def adobe_browse_folder(self):
         """Browse for a folder and set the Entry field to the chosen folder."""
         pdf_dir = filedialog.askdirectory(title="PDF Toolbox Document Browser", initialdir=constants.src_dir)
-        self.adobe_request_ent_multi_val.set(pdf_dir)
-        self.adobe_request_ent_single_val.set("")
+        self.adobe_api_ent_multi_val.set(pdf_dir)
+        self.adobe_api_ent_single_val.set("")
 
     def adobe_browse_file(self):
         """Browse for a file and set the Entry field to the chosen file."""
@@ -254,8 +263,20 @@ class ExtractPDF(Frame):
                 ("HTML", "*.htm*")
                 )
             )
-        self.adobe_request_ent_single_val.set(pdf_file)
-        self.adobe_request_ent_multi_val.set("")
+        self.adobe_api_ent_single_val.set(pdf_file)
+        self.adobe_api_ent_multi_val.set("")
+
+    def send_adobe_request(self):
+        if self.adobe_api_ent_multi_val.get() == "" and self.adobe_api_ent_single_val.get() == "":
+            return
+        if self.adobe_api_ent_multi_val.get() == "":
+            self.send_request = partial(adobe_json.extract_pdf_adobe, source_path=self.adobe_api_ent_single_val.get())
+            adobe_thread = multiprocessing.Process(target=self.send_request)
+            adobe_thread.start()
+        elif self.adobe_api_ent_single_val.get() == "":
+            self.send_request = partial(adobe_json.extract_pdf_adobe, source_path=self.adobe_api_ent_multi_val.get())
+            adobe_thread = multiprocessing.Process(target=self.send_request)
+            adobe_thread.start()
 
 
 # ------------------------------------------------------------------------------
