@@ -30,8 +30,24 @@ class ExtractPDF(Frame):
         self.scrapy_download.pack(fill="both", expand=1)
         # Adobe API options.
         self.adobe_api = Frame(self.extract_options, relief="groove", borderwidth=5)
-        self.adobe_some_text = Label(self.adobe_api, text="This is the Adobe options area.")
-        self.adobe_some_text.pack(fill="x", expand=1)
+        self.adobe_request = Frame(self.adobe_api, relief="groove", borderwidth=3)
+        self.adobe_request.pack(fill="both", expand=1)
+        self.adobe_request_lbl = Label(self.adobe_request, text="Adobe PDF Extract API")
+        self.adobe_request_lbl.pack(fill="x", expand=1)
+        self.adobe_request_ent_multi_val = StringVar()
+        self.adobe_request_ent_multi = Entry(self.adobe_request, textvariable=self.adobe_request_ent_multi_val)
+        self.adobe_request_ent_multi.pack(fill="x", expand=1, side="left")
+        self.adobe_request_btn_multi = Button(self.adobe_request, text="Select Folder", command=self.adobe_browse_folder)
+        self.adobe_request_btn_multi.pack(fill="x", expand=1, side="left")
+        self.adobe_request_ent_single_val = StringVar()
+        self.adobe_request_ent_single = Entry(self.adobe_request, textvariable=self.adobe_request_ent_single_val)
+        self.adobe_request_ent_single.pack(fill="x", expand=1, side="left")
+        self.adobe_request_btn_single = Button(self.adobe_request, text="Select File", command=self.adobe_browse_file)
+        self.adobe_request_btn_single.pack(fill="x", expand=1, side="left")
+        self.adobe_request_btn_send = Button(self.adobe_request, text="Send Request(s)")
+        self.adobe_request_btn_send.pack(fill="x", expand=1, side="bottom")
+        # self.adobe_some_text = Label(self.adobe_api, text="This is the Adobe options area.")
+        # self.adobe_some_text.pack(fill="x", expand=1)
         self.adobe_api.pack(fill="both", expand=1)
         # PyMuPDF options. (Manual/Auto Extraction)
         self.pymupdf_extract = Frame(self.extract_options, relief="groove", borderwidth=5)
@@ -217,6 +233,30 @@ class ExtractPDF(Frame):
                 )
         self.pdf_page_data = PhotoImage(data=self.data)
         self.pdf_page_img.configure(image=self.pdf_page_data, text=None)
+
+    def adobe_browse_folder(self):
+        """Browse for a folder and set the Entry field to the chosen folder."""
+        pdf_dir = filedialog.askdirectory(title="PDF Toolbox Document Browser", initialdir=constants.src_dir)
+        self.adobe_request_ent_multi_val.set(pdf_dir)
+        self.adobe_request_ent_single_val.set("")
+
+    def adobe_browse_file(self):
+        """Browse for a file and set the Entry field to the chosen file."""
+        pdf_file = filedialog.askopenfilename(
+            title="PDF Toolbox Document Browser", 
+            initialdir=constants.src_dir, 
+            filetypes=(
+                ("PDF Files", "*.pdf"), 
+                ("XPS Files", "*.*xps"), 
+                ("Epub Files", "*.epub"), 
+                ("Fiction Books", "*.fb2"), 
+                ("Comic Books", "*.cbz"), 
+                ("HTML", "*.htm*")
+                )
+            )
+        self.adobe_request_ent_single_val.set(pdf_file)
+        self.adobe_request_ent_multi_val.set("")
+
 
 # ------------------------------------------------------------------------------
 # Run standalone.
