@@ -6,17 +6,13 @@ class Editor(Frame):
     def __init__(self, master, **kwargs):
         Frame.__init__(self, master) # no need for super
 
-        # Different default width
-        if 'width' not in kwargs:
-            kwargs['width'] = 30
-
         # Creating the widgets
         self.text_area = Text(self, state="normal", wrap="none", pady=2, padx=3, undo=True, width=100, height=25)
         self.line_nums = LineNumbers(self, self.text_area, width=1)
         self.line_nums.pack(side="left", fill="y")
         self.text_area.pack(side="left", fill="both", expand=1)
         self.scrollbar = Scrollbar(self.master)
-        self.scrollbar.pack(side=RIGHT, fill=Y)
+        self.scrollbar.pack(side="right", fill="y")
 
 
         # Changing the settings to make the scrolling work
