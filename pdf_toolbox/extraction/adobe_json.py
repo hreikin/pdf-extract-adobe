@@ -17,20 +17,25 @@ from adobe.pdfservices.operation.pdfops.options.extractpdf.table_structure_type 
 
 def extract_pdf_adobe(source_path):
     """
-    This function recursively finds all PDF files within a given directory and 
-    then calls the sub function "_extract_all_from_pdf()" on all that are found.
+    This function creates multiple or individual API requests depending on the 
+    "source_path" supplied and then extracts the JSON content from the API 
+    response and creates an SQLite table from the JSON.
 
-    :param source_path: A directory containing PDF files.
+    :param source_path: A directory containing PDF files or just a PDF file.
     """
+    source_path = Path(source_path)
     zip_path = utils.constants.zip_dir
-    pdf_file_list = sorted(Path(source_path).rglob("*.pdf"))
-    pdf_amount = len(pdf_file_list)
-    logging.info(f"Found {pdf_amount} PDF files, creating individual API requests.")
-    for pdf in pdf_file_list:
-        _create_adobe_request(pdf)
+    if source_path.is_dir() == True:
+        pdf_file_list = sorted(source_path.rglob("*.pdf"))
+        pdf_amount = len(pdf_file_list)
+        logging.info(f"Found {pdf_amount} PDF files, creating individual API requests.")
+        for pdf in pdf_file_list:
+            _create_adobe_request(pdf)
+    else:
+        logging.info(f"Creating API request for {source_path.name}.")
+        _create_adobe_request(source_path)
     logging.info("Extracting JSON Schema.")
     utils.utilities.extract_from_zip(zip_path)
-    # Leave the below commented out while testing using the "main.py" file.
     logging.info("Manipulating Json and creating SQLite tables.")
     extraction.json_to_sqlite.split_main_json_file(utils.constants.json_dir)
 
@@ -40,8 +45,7 @@ def _create_adobe_request(source_file):
     Extract API. 
     
     This downloads a zip file containing the JSON Schema extracted from the 
-    source file. This sub function is called on every PDF file in the source 
-    directory by the "extract_pdf_adobe()" function.
+    source file.
 
     :param source_file: A PDF file.
     """
