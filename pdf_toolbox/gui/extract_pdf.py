@@ -1,12 +1,12 @@
-from functools import partial
-import multiprocessing
 from utils import constants
 from gui import scroll_frame
 from extraction import adobe_json
 
-import fitz
+import fitz, logging, multiprocessing
 from tkinter import *
 from tkinter import font, filedialog, messagebox
+from tkinter.ttk import Progressbar
+from functools import partial
 
 class ExtractPDF(Frame):
     def __init__(self, master=None):
@@ -55,8 +55,10 @@ class ExtractPDF(Frame):
         self.adobe_api_ent_single.pack(fill="x", expand=1)
         self.adobe_api_btn_single = Button(self.adobe_api_right, text="Select File",width=20, command=self.adobe_browse_file)
         self.adobe_api_btn_single.pack(fill="x")
-        self.adobe_api_btn_send = Button(self.adobe_api_bottom, text="Send Request(s)", command=self.send_adobe_request)
-        self.adobe_api_btn_send.pack(side="bottom", fill="x", expand=1)
+        self.adobe_api_progress_bar = Progressbar(self.adobe_api_bottom, mode="indeterminate")
+        self.adobe_api_progress_bar.pack(fill="x", expand=1)
+        self.adobe_api_btn_send = Button(self.adobe_api_bottom, text="Send Request(s)", command=self.generate_adobe_request)
+        self.adobe_api_btn_send.pack(fill="x", expand=1)
         self.adobe_api.pack(fill="both")
         # PyMuPDF/OCR options. (Auto Extraction)
         self.auto_extract = Frame(self.extract_options, relief="groove", borderwidth=2, padx=10, pady=10)
@@ -266,18 +268,33 @@ class ExtractPDF(Frame):
         self.adobe_api_ent_single_val.set(pdf_file)
         self.adobe_api_ent_multi_val.set("")
 
-    def send_adobe_request(self):
+    def generate_adobe_request(self):
         if self.adobe_api_ent_multi_val.get() == "" and self.adobe_api_ent_single_val.get() == "":
             return
         if self.adobe_api_ent_multi_val.get() == "":
-            self.send_request = partial(adobe_json.extract_pdf_adobe, source_path=self.adobe_api_ent_single_val.get())
-            adobe_thread = multiprocessing.Process(target=self.send_request)
-            adobe_thread.start()
+            self.send_adobe_request = partial(adobe_json.extract_pdf_adobe, source_path=self.adobe_api_ent_single_val.get())
+            self.adobe_process = multiprocessing.Process(target=self.send_adobe_request)
+            self.adobe_process.start()
+            self.adobe_api_progress_bar.start()
+            self.after(80, self.check_process)
+            # adobe_process.join()
         elif self.adobe_api_ent_single_val.get() == "":
-            self.send_request = partial(adobe_json.extract_pdf_adobe, source_path=self.adobe_api_ent_multi_val.get())
-            adobe_thread = multiprocessing.Process(target=self.send_request)
-            adobe_thread.start()
+            self.send_adobe_request = partial(adobe_json.extract_pdf_adobe, source_path=self.adobe_api_ent_multi_val.get())
+            self.adobe_process = multiprocessing.Process(target=self.send_adobe_request)
+            self.adobe_process.start()
+            self.after(80, self.check_process)
 
+    def check_process(self):
+        if (self.adobe_process.is_alive()):
+            self.after(80, self.check_process)
+            return
+        else:
+            try:
+                self.adobe_process.join()
+                self.adobe_api_progress_bar.stop()
+                logging.info("Process complete, exiting.")
+            except:
+                logging.exception("ERROR: Unable to stop process.")
 
 # ------------------------------------------------------------------------------
 # Run standalone.
