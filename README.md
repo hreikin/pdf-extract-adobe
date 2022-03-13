@@ -68,8 +68,10 @@ This should hopefully allow easier conversion to other formats and also let
 you create new documents using any text, tables pictures, etc you may 
 already have available in other file formats.
 <br /><br />
-PDF Toolbox is in development so things will break regularly until a solid base for 
-the program has been created and an initial version released.
+All development work currently happens on the `development` branch and changes 
+are merged frequently into `main`. Once a solid base has been formed a 0.1 
+release will be created and merges from the `development` branch will only be 
+for security fixes, bug fixes and new versions.
 <br />
 <!-- <a href="https://github.com/hreikin/pdf-toolbox"><strong>Explore the docs »</strong></a>
 <br />
