@@ -1,9 +1,8 @@
 from tkinter import *
 
 class Editor(Frame):
-    '''Two Text widgets and a Scrollbar in a Frame'''
-
     def __init__(self, master, **kwargs):
+        """Two Text widgets and a Scrollbar in a Frame."""
         Frame.__init__(self, master) # no need for super
 
         # Creating the widgets
@@ -34,6 +33,7 @@ class Editor(Frame):
 
 class LineNumbers(Text):
     def __init__(self, master, text_widget, **kwargs):
+        """A class to handle automatically updating the editors line numbers."""
         super().__init__(master, **kwargs)
 
         self.text_widget = text_widget
@@ -42,6 +42,7 @@ class LineNumbers(Text):
         self.configure(state='disabled')
 
     def on_key_press(self, event=None):
+        """Checks each key press to update the line numbers if on a new line."""
         final_index = str(self.text_widget.index(END))
         num_of_lines = final_index.split('.')[0]
         line_numbers_string = "\n".join(str(no + 1) for no in range(int(num_of_lines)))

@@ -16,7 +16,7 @@ class CreatePDF(Frame):
     def __init__(self, master=None):
         """
         Create a subclass of Frame for our window element. Initialize and set 
-        the font and variable defaults.
+        the variable defaults.
         """
         Frame.__init__(self, master)
         self.master = master
@@ -24,7 +24,7 @@ class CreatePDF(Frame):
         self.init_window()
 
     def init_window(self):
-        """Construct the layout of the window."""
+        """Construct the layout of the window element."""
         # Create PanedWindow for split layout.
         self.main_pw = PanedWindow(self.master, sashrelief="raised", sashwidth=10, orient="vertical")
 
@@ -92,6 +92,7 @@ class CreatePDF(Frame):
         self.editor.line_nums.on_key_press()
 
     def load_style(self, stylename):
+        """Load Pygments style for syntax highlighting within the editor."""
         self.style = get_style_by_name(stylename)
         self.syntax_highlighting_tags = []
         for token, opts in self.style.list_styles():
@@ -115,6 +116,7 @@ class CreatePDF(Frame):
         return self.syntax_highlighting_tags    
 
     def check_markdown(self, start='insert linestart', end='insert lineend'):
+        """Formats editor content using the Pygments style."""
         self.data = self.editor.text_area.get(start, end)
         while self.data and self.data[0] == '\n':
             start = self.editor.text_area.index('%s+1c' % start)
@@ -131,8 +133,9 @@ class CreatePDF(Frame):
             self.editor.text_area.mark_set("range_start", "range_end")
 
 
-# Extend MarkdownLexer to add markup for bold-italic
 class Lexer(MarkdownLexer):
+    """Extend MarkdownLexer to add markup for bold-italic. This needs extending 
+    further before being complete."""
     tokens = {key: val.copy() for key, val in MarkdownLexer.tokens.items()}
     # # bold-italic fenced by '***'
     tokens['inline'].insert(2, (r'(\*\*\*[^* \n][^*\n]*\*\*\*)',
