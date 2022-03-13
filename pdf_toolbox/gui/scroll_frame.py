@@ -7,6 +7,7 @@ import platform
 class ScrollFrame(Frame):
     # Create a frame (self)
     def __init__(self, parent, **kw):
+        """Scrollable frame for an image, used to display the PDF files."""
         super().__init__(parent, **kw)
         # Place canvas on self
         self.canvas = Canvas(self, borderwidth=0)
@@ -43,18 +44,18 @@ class ScrollFrame(Frame):
         self.on_frame_configure(None)
 
     def on_frame_configure(self, event):                                              
-        '''Reset the scroll region to encompass the inner frame'''
+        """Reset the scroll region to encompass the inner frame"""
         # Whenever the size of the frame changes, alter the scroll region respectively.
         self.canvas.configure(scrollregion=self.canvas.bbox("all"))
 
     def on_canvas_configure(self, event):
-        '''Reset the canvas window to encompass inner frame when required'''
+        """Reset the canvas window to encompass inner frame when required"""
         canvas_width = event.width
         # Whenever the size of the canvas changes alter the window region respectively.
         self.canvas.itemconfig(self.canvas_window, width = canvas_width)
 
     def on_mouse_wheel(self, event):
-        # Cross platform scroll wheel event.
+        """Cross platform scroll wheel event."""
         if platform.system() == 'Windows':
             self.canvas.yview_scroll(int(-1* (event.delta/120)), "units")
         elif platform.system() == 'Darwin':
@@ -66,7 +67,7 @@ class ScrollFrame(Frame):
                 self.canvas.yview_scroll( 1, "units" )
     
     def on_enter(self, event):
-        # Bind wheel events when the cursor enters the control.
+        """Bind wheel events when the cursor enters the control."""
         if platform.system() == 'Linux':
             self.canvas.bind_all("<Button-4>", self.on_mouse_wheel)
             self.canvas.bind_all("<Button-5>", self.on_mouse_wheel)
@@ -74,7 +75,7 @@ class ScrollFrame(Frame):
             self.canvas.bind_all("<MouseWheel>", self.on_mouse_wheel)
 
     def on_leave(self, event):
-        # Unbind wheel events when the cursorl leaves the control.
+        """Unbind wheel events when the cursorl leaves the control."""
         if platform.system() == 'Linux':
             self.canvas.unbind_all("<Button-4>")
             self.canvas.unbind_all("<Button-5>")

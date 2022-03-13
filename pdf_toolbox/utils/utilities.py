@@ -3,13 +3,11 @@ import zipfile, logging, utils.constants
 from pathlib import Path
 
 def extract_from_zip(zip_source):
-    """
-    Recursively finds all zip files within a source directory and un-zips them to 
-    a given output directory.
+    """Finds all zip files within a source directory and un-zips them to a given 
+    output directory.
 
     :param zip_source: A directory containing zip files.
-    :param output_path: The directory to extract the zip contents in to.
-    """
+    :param output_path: The directory to extract the zip contents in to."""
     # Extracts Json Schema from zip file.
     output_path = utils.constants.json_dir
     Path(output_path).mkdir(parents=True, exist_ok=True)

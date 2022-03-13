@@ -5,6 +5,7 @@ import pandas as pd
 from pathlib import Path
 
 def convert_db_markdown(original_src, with_imgs=True):
+    """Converts extracted content from database entries into markdown format."""
     original_src = Path(original_src).resolve()
     name = original_src.name
     new_name = name.replace("-", "_").replace(".", "_").replace("*", "_")
@@ -85,9 +86,7 @@ def convert_db_markdown(original_src, with_imgs=True):
 
 
 def _convert_csv_md_tables(csv_file, tab_path):
-    """
-    Converts found ".csv" tables into Github markdown formatting using Pandas.
-    """
+    """Converts found ".csv" tables into Github markdown formatting using Pandas."""
     df = pd.read_csv(csv_file, engine="python")
     with open(tab_path, "w") as stream:
         df.fillna("", inplace=True)

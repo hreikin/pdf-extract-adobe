@@ -4,6 +4,7 @@ from PyPDF2 import PdfFileWriter, PdfFileReader, PdfFileMerger
 from pathlib import Path
 
 def split_all_pages_pdf(input_file):
+    """Splits a PDF into individual pages."""
     input_file = Path(input_file).resolve()
     output_dir = Path("../test/processing/split/" + input_file.name.strip(".pdf") + "-PAGES/").resolve()
     input_pdf = PdfFileReader(open(input_file, "rb"))
@@ -25,6 +26,7 @@ def split_all_pages_pdf(input_file):
     logging.info(f"Success, {page_num}/{total_pages} pages split from '{input_file.name}'.")
 
 def append_pdf(input_one, input_two):
+    """Appends one PDF on to the end of another."""
     merger = PdfFileMerger()
     input_one = Path(input_one).resolve()
     input_two = Path(input_two).resolve()
@@ -42,6 +44,7 @@ def append_pdf(input_one, input_two):
     logging.info(f"Success, merged file available at '{output_path}'.")
 
 def overlay(input_file, overlay_file):
+    """Overlays one PDF onto another, useful for watermarking."""
     input_file = Path(input_file).resolve()
     output_dir = Path("../test/processing/overlay/")
     output_file = output_dir.resolve() / f"{input_file.stem}-OVERLAY.pdf"

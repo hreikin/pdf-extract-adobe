@@ -11,10 +11,8 @@ from functools import partial
 
 class ExtractPDF(Frame):
     def __init__(self, master=None):
-        """
-        Create a subclass of Frame for our window element. Initialize and set 
-        the font and variable defaults.
-        """
+        """Create a subclass of Frame for our window element. Initialize and set 
+        the variable defaults."""
         Frame.__init__(self, master)
         self.master = master
         self.myfont = font.Font(family="Ubuntu", size=16)
@@ -22,7 +20,7 @@ class ExtractPDF(Frame):
         self.init_window()
 
     def init_window(self):
-        """Construct the layout of the window."""
+        """Construct the layout of the window element."""
         # Create PanedWindow for split layout.
         self.pw = PanedWindow(self.master, sashrelief="raised", sashwidth=10)
         # Extraction options frame (left side) to hold all options.
@@ -123,10 +121,8 @@ class ExtractPDF(Frame):
 # Open the PDF file to view/edit/extract from.
 # ------------------------------------------------------------------------------
     def open_extract(self):
-        """
-        Open a file dialog and ask for an input file for the previewer to load 
-        and display.
-        """
+        """Open a file dialog and ask for an input file for the previewer to load 
+        and display."""
         self.fname = filedialog.askopenfile(
             title="PDF Toolbox Document Browser", 
             initialdir=constants.pdf_dir, 
@@ -172,11 +168,10 @@ class ExtractPDF(Frame):
 # Read the page data.
 # ------------------------------------------------------------------------------
     def get_page(self, pno, max_size=None):
-        """
-        Return a tkinter.PhotoImage or a PNG image for a document page number.
+        """Return a tkinter.PhotoImage or a PNG image for a document page number.
+        
         :arg int pno: 0-based page number
-        :arg max_size: (width, height) of available image area
-        """
+        :arg max_size: (width, height) of available image area"""
         # Get display list of page number.
         self.dlist = self.dlist_tab[pno]
         # Create if not yet there.
@@ -200,9 +195,7 @@ class ExtractPDF(Frame):
         return self.img, self.clip.tl
 
     def next_page(self):
-        """
-        When called, load the next PDF page.
-        """
+        """When called, load the next PDF page."""
         self.cur_page += 1
         # Sanitize page number and wrap around.
         while self.cur_page >= self.page_count:
@@ -224,9 +217,7 @@ class ExtractPDF(Frame):
         self.pdf_page_img.configure(image=self.pdf_page_data, text=None)
 
     def prev_page(self):
-        """
-        When called, load the previous PDF page.
-        """
+        """When called, load the previous PDF page."""
         self.cur_page -= 1
         # Sanitize page number and wrap around.
         while self.cur_page >= self.page_count:
@@ -248,10 +239,8 @@ class ExtractPDF(Frame):
         self.pdf_page_img.configure(image=self.pdf_page_data, text=None)
 
     def toggle_zoom(self):
-        """
-        Toggle zoom on or off. When zoomed pages a displayed at twice their 
-        normal size.
-        """
+        """Toggle zoom on or off. When zoomed pages a displayed at twice their 
+        normal size."""
         if self.zoom_on == False:
             self.zoom_on = True
             self.zoom_width = self.max_width * 2
@@ -294,6 +283,7 @@ class ExtractPDF(Frame):
         self.adobe_api_ent_multi_val.set("")
 
     def generate_adobe_request(self):
+        """Use multiprocessing to create Adobe API request."""
         if self.adobe_api_ent_multi_val.get() == "" and self.adobe_api_ent_single_val.get() == "":
             return
         if self.adobe_api_ent_multi_val.get() == "":
@@ -310,6 +300,7 @@ class ExtractPDF(Frame):
             self.after(80, self.check_process, self.adobe_process, self.adobe_api_progress_bar)
 
     def start_crawler(self):
+        """Use multiprocessing to start the crawler."""
         if self.scrapy_download_domain_ent_val.get == "" or self.scrapy_download_url_ent_val.get() == "":
             return
         self.crawler_partial = partial(download_pdfs.run_spider, start_url=self.scrapy_download_url_ent_val.get(), allowed_domain=self.scrapy_download_domain_ent_val.get())
@@ -319,6 +310,8 @@ class ExtractPDF(Frame):
         self.after(80, self.check_process, self.crawler_process, self.scrapy_download_progress_bar)
 
     def check_process(self, process, progress_bar):
+        """Checks if process has finished, if it has then it joins the process 
+        and stops the progress bar."""
         if (process.is_alive()):
             self.after(80, self.check_process, process, progress_bar)
             return

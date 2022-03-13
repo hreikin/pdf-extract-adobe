@@ -6,10 +6,8 @@ from pathlib import Path
 from PIL import Image
 
 def convert_pages_into_image(input_path, format):
-    """
-    Recursively finds all PDF files within a given directory and converts each 
-    page of each PDF to an image using PyMuPDF. 
-    """
+    """Recursively finds all PDF files within a given directory and converts each 
+    page of each PDF to an image using PyMuPDF."""
     # To get better resolution
     zoom_x = 2.0
     zoom_y = 2.0
@@ -27,10 +25,8 @@ def convert_pages_into_image(input_path, format):
             pix.save(f"{images_path}/{image_name}{page.number}{format}")
 
 def ocr_images_for_text_confidence(input_path, format=".png"):
-    """
-    Recursively finds all images of the given format and performs OCR on them to 
-    create a text file containing the infomation that was found.
-    """
+    """Recursively finds all images of the given format and performs OCR on them 
+    to create a text file containing the infomation that was found."""
     input_path = Path(input_path).resolve()
     for directory in input_path.iterdir():
         if directory.name == "pages-converted-to-images":
@@ -47,6 +43,8 @@ def ocr_images_for_text_confidence(input_path, format=".png"):
                         stream.write(ocr_string)
 
 def extract_text_from_pdf_confidence(input_path):
+    """Extracts all text from all found PDF files using PyMuPDF for the 
+    confidence check"""
     input_path = Path(input_path).resolve()
     pdf_file_list = sorted(Path(input_path).rglob(f"*.pdf"))
     for pdf in pdf_file_list:
@@ -62,6 +60,7 @@ def extract_text_from_pdf_confidence(input_path):
             stream.write(pdf_text)
 
 def extract_images_from_pdf(input_path):
+    """Extracts all images from all found PDF files using PyMuPDF."""
     input_path = Path(input_path).resolve()
     pdf_file_list = sorted(Path(input_path).rglob(f"*.pdf"))
     for pdf in pdf_file_list:

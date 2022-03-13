@@ -1,5 +1,9 @@
 from pathlib import Path
 
+# This is the only variable to be changed from elsewhere. All the rest should 
+# remain constant.
+cur_file = Path()
+
 base_dir = Path("..").resolve()
 src_dir = base_dir / "src"
 confidence_dir = src_dir / "confidence"
@@ -10,13 +14,13 @@ json_dir = src_dir / "json"
 pdf_dir = src_dir / "pdfs"
 zip_dir = src_dir / "zips"
 database = src_dir / "sqlite" / "pcc.sqlite"
-cur_file = Path()
 headings = []
 paragraphs = ["P", "LBody", "ParagraphSpan", "Span", "StyleSpan"]
 lists = ["L"]
 table_rows = ["TR"]
 figures = ["Figure", "Table"]
 unwanted_pdf = ["*", "◈", "-", "•", "* ", "◈ ", "- ", "• ", ":", ": ", ".    "]
+# Append more headings.
 for i in range(0, 201):
     headings.append(f"H{i}")
     paragraphs.append(f"P[{i}]")

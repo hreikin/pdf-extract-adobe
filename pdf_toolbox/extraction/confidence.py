@@ -5,23 +5,17 @@ from pathlib import Path
 from difflib import SequenceMatcher, get_close_matches
 
 def confidence_check_text(input_path):
-    """
-    Recursively finds two pre-determined text files to be used for a very basic 
-    confidence check.
-
-    The confidence check uses the difflib "SequenceMatcher" class and 
-    "get_close_matches()" method to compare two files created with the 
-    "_iterate_through_nested_dicts()" and "ocr_converted_pdf_images()" functions 
-    before returning a ratio. All ratios and averages are stored to a dictionary 
-    and text file.
+    """Finds three pre-determined text files to be used for a very basic 
+    confidence check. The confidence check uses the difflib "SequenceMatcher" 
+    class and "get_close_matches()" method to compare the files before returning 
+    a ratio. All ratios and averages are stored to a dictionary and text file.
 
     The Python docs state that "ratio()" returns a float in [0, 1], measuring 
     the similarity of the sequences. As a rule of thumb, a "ratio()" value over 
     0.6 means the sequences are close matches. The same value of 0.6 is used as 
     the cut-off for the "get_close_matches()" method.
 
-    :param input_path: Directory which contains the extracted/OCR text files.
-    """
+    :param input_path: Directory which contains the extracted/OCR text files."""
     input_path = Path(input_path)
     final_score_dict = dict()
     for directory in input_path.iterdir():

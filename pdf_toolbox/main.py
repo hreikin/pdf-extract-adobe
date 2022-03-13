@@ -42,16 +42,16 @@ for item in constants.headings:
 constants.headings = new_headings
 
 class PDFToolbox(Frame):
-    """Create a subclass of Frame for our window."""
     def __init__(self, master=None):
-        """Initialize and set the font."""
+        """Create a subclass of Frame for our window and then initialize and set 
+        the variables."""
         Frame.__init__(self, master)
         self.master = master
         self.myfont = font.Font(family="Ubuntu", size=16)
         self.init_window()
 
     def init_window(self):
-        """Construct the layout"""
+        """Construct the layout."""
         self.tabs = Notebook(self.master)
 
         # Create two tabs and add them to the notebook.
@@ -116,14 +116,17 @@ class PDFToolbox(Frame):
         self.master.config(menu=self.main_menu)
 
     def popup(self, event):
+        """Right-click popup at mouse location."""
         self.right_click.post(event.x_root, event.y_root)
 
     def select_all(self, *args):
+        """Select all text within the editor window."""
         self.create_area.editor.text_area.tag_add(SEL, "1.0", END)
         self.create_area.editor.text_area.mark_set(0.0, END)
         self.create_area.editor.text_area.see(INSERT)
 
     def find(self, *args):
+        """Search for a string within the editor window."""
         self.create_area.editor.text_area.tag_remove('found', '1.0', END)
         target = simpledialog.askstring('Find', 'Search String:')
 
@@ -173,6 +176,8 @@ class PDFToolbox(Frame):
             self.save_as_md_file()
 
     def scroll_line_numbers(self):
+        """Scroll line numbers at the same time as the text area within the 
+        editor."""
         self.create_area.line_nums.yview_scroll(number=1)
             
 # Instantiate the root window, set the screen size and instantiate the PDF 

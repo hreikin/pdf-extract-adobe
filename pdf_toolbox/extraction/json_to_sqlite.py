@@ -5,6 +5,8 @@ import os
 from pathlib import Path
 
 def split_main_json_file(src):
+    """Splits the JSON files returned by the Adobe API into separate parts based 
+    on the top-level keys."""
     src = Path(src).resolve()
     for directory in src.iterdir():
         json_files = directory.glob("structuredData.json")
@@ -22,11 +24,13 @@ def split_main_json_file(src):
             _sqlitebiter_import_json(filename.parent.resolve())
 
 def _split_elements_json(src):
+    """Splits the "elements.json" file into smaller pieces and formats them for 
+    use with SQLiteBiter.""""
     src = Path(src).resolve()
     processing = list()
     elements_json = src / "elements.json"
     new_elements = elements_json.with_name(src.parent.name + ".json")
-    with open(elements_json, "r")as stream:
+    with open(elements_json, "r") as stream:
         json_file = json.load(stream)
     _iterate_json(json_file, src, processing)
     final = []
@@ -58,6 +62,7 @@ def _split_elements_json(src):
         json.dump(final, stream)
 
 def _sqlitebiter_import_json(src):
+    """Imports select JSON data into an SQLite database."""
     all_files = Path(src).rglob("*.json")
     db_out = Path(utils.constants.database).resolve()
     db_out.parent.mkdir(parents=True, exist_ok=True)
@@ -66,6 +71,8 @@ def _sqlitebiter_import_json(src):
             os.system(f"sqlitebiter -a -o {db_out} file {file}")
 
 def _iterate_json(json_file,  src, processing):
+    """Sub-function used to iterate through "elements.json" when splitting and 
+    formatting."""
     for sub_dict in json_file:
         keys_list = list(sub_dict.keys())
         values_list = list(sub_dict.values())

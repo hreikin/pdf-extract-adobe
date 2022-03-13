@@ -16,13 +16,11 @@ from adobe.pdfservices.operation.pdfops.options.extractpdf.extract_renditions_el
 from adobe.pdfservices.operation.pdfops.options.extractpdf.table_structure_type import TableStructureType
 
 def extract_pdf_adobe(source_path):
-    """
-    This function creates multiple or individual API requests depending on the 
+    """This function creates multiple or individual API requests depending on the 
     "source_path" supplied and then extracts the JSON content from the API 
     response and creates an SQLite table from the JSON.
 
-    :param source_path: A directory containing PDF files or just a PDF file.
-    """
+    :param source_path: A directory containing PDF files or just a PDF file."""
     source_path = Path(source_path)
     zip_path = utils.constants.zip_dir
     if source_path.is_dir() == True:
@@ -41,15 +39,13 @@ def extract_pdf_adobe(source_path):
     logging.info("SQLite table creation complete.")
 
 def _create_adobe_request(source_file):
-    """
-    Takes an input PDF file and builds a request which is sent to the Adobe PDF 
-    Extract API. 
+    """Takes an input PDF file and builds a request which is sent to the Adobe 
+    PDF Extract API. 
     
     This downloads a zip file containing the JSON Schema extracted from the 
     source file.
 
-    :param source_file: A PDF file.
-    """
+    :param source_file: A PDF file."""
     try:
         # get base path.
         source_file = Path(source_file).resolve()
@@ -91,6 +87,7 @@ def _create_adobe_request(source_file):
         _create_adobe_request(source_file)
 
 def create_pdf_url_list():
+    """Creates a list of PDF files downloaded and the page they came from."""
     out_path = Path(utils.constants.src_dir).resolve()
     out_file = out_path / "pdf-urls.txt"
     with open("pdf-urls.jl") as stream:
