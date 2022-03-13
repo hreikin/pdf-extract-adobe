@@ -1,3 +1,4 @@
+from download.spiders import download_pdfs
 from utils import constants
 from gui import scroll_frame
 from extraction import adobe_json
@@ -28,9 +29,33 @@ class ExtractPDF(Frame):
         self.extract_options = Frame(self.pw)
         # Scrapy options. (Download/Scrape PDF Files)
         self.scrapy_download = Frame(self.extract_options, relief="groove", borderwidth=2, padx=10, pady=10)
-        self.scrapy_some_text = Label(self.scrapy_download, text="Scrape PDF Files From Website.")
-        self.scrapy_some_text.pack(fill="x", expand=1)
-        self.scrapy_download.pack(fill="both", expand=1)
+        self.scrapy_download_top = Frame(self.scrapy_download)
+        self.scrapy_download_top.pack(fill="both", expand=1)
+        self.scrapy_download_middle = Frame(self.scrapy_download)
+        self.scrapy_download_middle.pack(fill="both", expand=1)
+        self.scrapy_download_left = Frame(self.scrapy_download_middle)
+        self.scrapy_download_left.pack(side="left", fill="both")
+        self.scrapy_download_right = Frame(self.scrapy_download_middle)
+        self.scrapy_download_right.pack(side="right", fill="both")
+        self.scrapy_download_bottom = Frame(self.scrapy_download)
+        self.scrapy_download_bottom.pack(fill="both", expand=1)
+        self.scrapy_download_lbl = Label(self.scrapy_download_top, text="Scrape PDF Files From Website.")
+        self.scrapy_download_lbl.pack(side="left", fill="x")
+        self.scrapy_download_url_ent_val = StringVar()
+        self.scrapy_download_url_ent_lbl = Label(self.scrapy_download_left, text="Enter a URL, e.g. https://example.com/")
+        self.scrapy_download_url_ent_lbl.pack(fill="x")
+        self.scrapy_download_url_ent = Entry(self.scrapy_download_left, width=40, textvariable=self.scrapy_download_url_ent_val)
+        self.scrapy_download_url_ent.pack(fill="x", expand=1)
+        self.scrapy_download_domain_ent_val = StringVar()
+        self.scrapy_download_domain_ent_lbl = Label(self.scrapy_download_right, text="Enter a domain, e.g. example.com/")
+        self.scrapy_download_domain_ent_lbl.pack(fill="x")
+        self.scrapy_download_domain_ent = Entry(self.scrapy_download_right, width=40, textvariable=self.scrapy_download_domain_ent_val)
+        self.scrapy_download_domain_ent.pack(fill="x", expand=1)
+        self.scrapy_download_progress_bar = Progressbar(self.scrapy_download_bottom, mode="indeterminate")
+        self.scrapy_download_progress_bar.pack(fill="x", expand=1)
+        self.scrapy_download_btn = Button(self.scrapy_download_bottom, text="Start Crawler", width=20, command=self.start_crawler) 
+        self.scrapy_download_btn.pack(fill="x", expand=1)
+        self.scrapy_download.pack(fill="both")
         # Adobe API options.
         self.adobe_api = Frame(self.extract_options, relief="groove", borderwidth=2, padx=10, pady=10)
         self.adobe_api_top = Frame(self.adobe_api)
@@ -276,22 +301,31 @@ class ExtractPDF(Frame):
             self.adobe_process = multiprocessing.Process(target=self.send_adobe_request)
             self.adobe_process.start()
             self.adobe_api_progress_bar.start()
-            self.after(80, self.check_process)
+            self.after(80, self.check_process, self.adobe_process, self.adobe_api_progress_bar)
             # adobe_process.join()
         elif self.adobe_api_ent_single_val.get() == "":
             self.send_adobe_request = partial(adobe_json.extract_pdf_adobe, source_path=self.adobe_api_ent_multi_val.get())
             self.adobe_process = multiprocessing.Process(target=self.send_adobe_request)
             self.adobe_process.start()
-            self.after(80, self.check_process)
+            self.after(80, self.check_process, self.adobe_process, self.adobe_api_progress_bar)
 
-    def check_process(self):
-        if (self.adobe_process.is_alive()):
-            self.after(80, self.check_process)
+    def start_crawler(self):
+        if self.scrapy_download_domain_ent_val.get == "" or self.scrapy_download_url_ent_val.get() == "":
+            return
+        self.crawler_partial = partial(download_pdfs.run_spider, start_url=self.scrapy_download_url_ent_val.get(), allowed_domain=self.scrapy_download_domain_ent_val.get())
+        self.crawler_process = multiprocessing.Process(target=self.crawler_partial)
+        self.crawler_process.start()
+        self.scrapy_download_progress_bar.start()
+        self.after(80, self.check_process, self.crawler_process, self.scrapy_download_progress_bar)
+
+    def check_process(self, process, progress_bar):
+        if (process.is_alive()):
+            self.after(80, self.check_process, process, progress_bar)
             return
         else:
             try:
-                self.adobe_process.join()
-                self.adobe_api_progress_bar.stop()
+                process.join()
+                progress_bar.stop()
                 logging.info("Process complete, exiting.")
             except:
                 logging.exception("ERROR: Unable to stop process.")
