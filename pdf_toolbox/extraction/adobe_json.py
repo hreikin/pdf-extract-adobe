@@ -38,6 +38,7 @@ def extract_pdf_adobe(source_path):
     utils.utilities.extract_from_zip(zip_path)
     logging.info("Manipulating Json and creating SQLite tables.")
     extraction.json_to_sqlite.split_main_json_file(utils.constants.json_dir)
+    logging.info("SQLite table creation complete.")
 
 def _create_adobe_request(source_file):
     """
