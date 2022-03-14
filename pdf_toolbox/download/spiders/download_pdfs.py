@@ -11,9 +11,9 @@ class DownloadPdfsSpider(scrapy.Spider):
 
     def parse(self, response):
         """Finds all links in a page and creates a request."""
-      for href in response.css("a::attr('href')"):
-          url = response.urljoin(href.extract())
-          yield scrapy.Request(url, callback = self.parse_page)
+        for href in response.css("a::attr('href')"):
+            url = response.urljoin(href.extract())
+            yield scrapy.Request(url, callback = self.parse_page)
 
 
     def parse_page(self, response):
