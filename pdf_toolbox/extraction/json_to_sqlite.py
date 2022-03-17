@@ -25,7 +25,7 @@ def split_main_json_file(src):
 
 def _split_elements_json(src):
     """Splits the "elements.json" file into smaller pieces and formats them for 
-    use with SQLiteBiter.""""
+    use with SQLiteBiter."""
     src = Path(src).resolve()
     processing = list()
     elements_json = src / "elements.json"
