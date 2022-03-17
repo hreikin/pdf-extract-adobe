@@ -4,16 +4,20 @@ from gui import scroll_frame
 from extraction import adobe_json
 
 import fitz, logging, multiprocessing
-from tkinter import *
-from tkinter import font, filedialog, messagebox
-from tkinter.ttk import Progressbar
+# from tkinter import *
+import tkinter as tk
+from tkinter import filedialog, messagebox
+import ttkbootstrap as ttk
+from ttkbootstrap.constants import *
+from ttkbootstrap import font
+# from tkinter.ttk import Progressbar
 from functools import partial
 
-class ExtractPDF(Frame):
+class ExtractPDF(ttk.Frame):
     def __init__(self, master=None):
         """Create a subclass of Frame for our window element. Initialize and set 
         the variable defaults."""
-        Frame.__init__(self, master)
+        ttk.Frame.__init__(self, master)
         self.master = master
         self.myfont = font.Font(family="Ubuntu", size=16)
         self.zoom_on = False
@@ -22,94 +26,94 @@ class ExtractPDF(Frame):
     def init_window(self):
         """Construct the layout of the window element."""
         # Create PanedWindow for split layout.
-        self.pw = PanedWindow(self.master, sashrelief="raised", sashwidth=10)
+        self.pw = ttk.PanedWindow(self.master, orient="horizontal")
         # Extraction options frame (left side) to hold all options.
-        self.extract_options = Frame(self.pw)
+        self.extract_options = ttk.Frame(self.pw)
         # Scrapy options. (Download/Scrape PDF Files)
-        self.scrapy_download = Frame(self.extract_options, relief="groove", borderwidth=2, padx=10, pady=10)
-        self.scrapy_download_top = Frame(self.scrapy_download)
+        self.scrapy_download = ttk.Frame(self.extract_options)
+        self.scrapy_download_top = ttk.Frame(self.scrapy_download)
         self.scrapy_download_top.pack(fill="both", expand=1)
-        self.scrapy_download_middle = Frame(self.scrapy_download)
+        self.scrapy_download_middle = ttk.Frame(self.scrapy_download)
         self.scrapy_download_middle.pack(fill="both", expand=1)
-        self.scrapy_download_left = Frame(self.scrapy_download_middle)
+        self.scrapy_download_left = ttk.Frame(self.scrapy_download_middle)
         self.scrapy_download_left.pack(side="left", fill="both")
-        self.scrapy_download_right = Frame(self.scrapy_download_middle)
+        self.scrapy_download_right = ttk.Frame(self.scrapy_download_middle)
         self.scrapy_download_right.pack(side="right", fill="both")
-        self.scrapy_download_bottom = Frame(self.scrapy_download)
+        self.scrapy_download_bottom = ttk.Frame(self.scrapy_download)
         self.scrapy_download_bottom.pack(fill="both", expand=1)
-        self.scrapy_download_lbl = Label(self.scrapy_download_top, text="Scrape PDF Files From Website.")
+        self.scrapy_download_lbl = ttk.Label(self.scrapy_download_top, text="Scrape PDF Files From Website.")
         self.scrapy_download_lbl.pack(side="left", fill="x")
-        self.scrapy_download_url_ent_val = StringVar()
-        self.scrapy_download_url_ent_lbl = Label(self.scrapy_download_left, text="Enter a URL, e.g. https://example.com/")
+        self.scrapy_download_url_ent_val = ttk.StringVar()
+        self.scrapy_download_url_ent_lbl = ttk.Label(self.scrapy_download_left, text="Enter a URL, e.g. https://example.com/")
         self.scrapy_download_url_ent_lbl.pack(fill="x")
-        self.scrapy_download_url_ent = Entry(self.scrapy_download_left, width=40, textvariable=self.scrapy_download_url_ent_val)
+        self.scrapy_download_url_ent = ttk.Entry(self.scrapy_download_left, width=40, textvariable=self.scrapy_download_url_ent_val)
         self.scrapy_download_url_ent.pack(fill="x", expand=1)
-        self.scrapy_download_domain_ent_val = StringVar()
-        self.scrapy_download_domain_ent_lbl = Label(self.scrapy_download_right, text="Enter a domain, e.g. example.com/")
+        self.scrapy_download_domain_ent_val = ttk.StringVar()
+        self.scrapy_download_domain_ent_lbl = ttk.Label(self.scrapy_download_right, text="Enter a domain, e.g. example.com/")
         self.scrapy_download_domain_ent_lbl.pack(fill="x")
-        self.scrapy_download_domain_ent = Entry(self.scrapy_download_right, width=40, textvariable=self.scrapy_download_domain_ent_val)
+        self.scrapy_download_domain_ent = ttk.Entry(self.scrapy_download_right, width=40, textvariable=self.scrapy_download_domain_ent_val)
         self.scrapy_download_domain_ent.pack(fill="x", expand=1)
-        self.scrapy_download_progress_bar = Progressbar(self.scrapy_download_bottom, mode="indeterminate")
+        self.scrapy_download_progress_bar = ttk.Progressbar(self.scrapy_download_bottom, mode="indeterminate", bootstyle="success")
         self.scrapy_download_progress_bar.pack(fill="x", expand=1)
-        self.scrapy_download_btn = Button(self.scrapy_download_bottom, text="Start Crawler", width=20, command=self.start_crawler) 
+        self.scrapy_download_btn = ttk.Button(self.scrapy_download_bottom, text="Start Crawler", width=20, command=self.start_crawler) 
         self.scrapy_download_btn.pack(fill="x", expand=1)
         self.scrapy_download.pack(fill="both")
         # Adobe API options.
-        self.adobe_api = Frame(self.extract_options, relief="groove", borderwidth=2, padx=10, pady=10)
-        self.adobe_api_top = Frame(self.adobe_api)
+        self.adobe_api = ttk.Frame(self.extract_options)
+        self.adobe_api_top = ttk.Frame(self.adobe_api)
         self.adobe_api_top.pack(fill="both", expand=1)
-        self.adobe_api_middle = Frame(self.adobe_api)
+        self.adobe_api_middle = ttk.Frame(self.adobe_api)
         self.adobe_api_middle.pack(fill="both", expand=1)
-        self.adobe_api_bottom = Frame(self.adobe_api)
+        self.adobe_api_bottom = ttk.Frame(self.adobe_api)
         self.adobe_api_bottom.pack(fill="both", expand=1)
-        self.adobe_api_left = Frame(self.adobe_api_middle)
+        self.adobe_api_left = ttk.Frame(self.adobe_api_middle)
         self.adobe_api_left.pack(side="left", fill="both")
-        self.adobe_api_right = Frame(self.adobe_api_middle)
+        self.adobe_api_right = ttk.Frame(self.adobe_api_middle)
         self.adobe_api_right.pack(side="right", fill="both")
-        self.adobe_api_lbl = Label(self.adobe_api_top, text="Adobe PDF Extract API")
+        self.adobe_api_lbl = ttk.Label(self.adobe_api_top, text="Adobe PDF Extract API")
         self.adobe_api_lbl.pack(side="left", fill="x")
-        self.adobe_api_ent_multi_val = StringVar()
-        self.adobe_api_ent_multi = Entry(self.adobe_api_left, width=60, textvariable=self.adobe_api_ent_multi_val)
+        self.adobe_api_ent_multi_val = ttk.StringVar()
+        self.adobe_api_ent_multi = ttk.Entry(self.adobe_api_left, width=60, textvariable=self.adobe_api_ent_multi_val)
         self.adobe_api_ent_multi.pack(fill="x", expand=1)
-        self.adobe_api_btn_multi = Button(self.adobe_api_right, text="Select Folder",width=20, command=self.adobe_browse_folder)
+        self.adobe_api_btn_multi = ttk.Button(self.adobe_api_right, text="Select Folder",width=20, command=self.adobe_browse_folder)
         self.adobe_api_btn_multi.pack(fill="x")
-        self.adobe_api_ent_single_val = StringVar()
-        self.adobe_api_ent_single = Entry(self.adobe_api_left, width=60, textvariable=self.adobe_api_ent_single_val)
+        self.adobe_api_ent_single_val = ttk.StringVar()
+        self.adobe_api_ent_single = ttk.Entry(self.adobe_api_left, width=60, textvariable=self.adobe_api_ent_single_val)
         self.adobe_api_ent_single.pack(fill="x", expand=1)
-        self.adobe_api_btn_single = Button(self.adobe_api_right, text="Select File",width=20, command=self.adobe_browse_file)
+        self.adobe_api_btn_single = ttk.Button(self.adobe_api_right, text="Select File",width=20, command=self.adobe_browse_file)
         self.adobe_api_btn_single.pack(fill="x")
-        self.adobe_api_progress_bar = Progressbar(self.adobe_api_bottom, mode="indeterminate")
+        self.adobe_api_progress_bar = ttk.Progressbar(self.adobe_api_bottom, mode="indeterminate", bootstyle="success")
         self.adobe_api_progress_bar.pack(fill="x", expand=1)
-        self.adobe_api_btn_send = Button(self.adobe_api_bottom, text="Send Request(s)", command=self.generate_adobe_request)
+        self.adobe_api_btn_send = ttk.Button(self.adobe_api_bottom, text="Send Request(s)", command=self.generate_adobe_request)
         self.adobe_api_btn_send.pack(fill="x", expand=1)
         self.adobe_api.pack(fill="both")
         # PyMuPDF/OCR options. (Auto Extraction)
-        self.auto_extract = Frame(self.extract_options, relief="groove", borderwidth=2, padx=10, pady=10)
-        self.auto_some_text = Label(self.auto_extract, text="Auto Content Extraction.")
+        self.auto_extract = ttk.Frame(self.extract_options)
+        self.auto_some_text = ttk.Label(self.auto_extract, text="Auto Content Extraction.")
         self.auto_some_text.pack(fill="x", expand=1)
         self.auto_extract.pack(fill="both", expand=1)
         # PyMuPDF/OCR options. (Manual Extraction)
-        self.manual_extract = Frame(self.extract_options, relief="groove", borderwidth=2, padx=10, pady=10)
-        self.manual_some_text = Label(self.manual_extract, text="Manual Content Extraction.")
+        self.manual_extract = ttk.Frame(self.extract_options)
+        self.manual_some_text = ttk.Label(self.manual_extract, text="Manual Content Extraction.")
         self.manual_some_text.pack(fill="x", expand=1)
         self.manual_extract.pack(fill="both", expand=1)
         # PDF preview area (right side) with controls for navigation, zoom, etc 
         # at the top and the scrollable PDF preview below.
-        self.preview_area = Frame(self.pw)
+        self.preview_area = ttk.Frame(self.pw)
         # Controls for navigation, zoom, etc.
-        self.top_bar = Frame(self.preview_area, relief="groove", borderwidth=2, padx=10, pady=10)
-        self.open_btn = Button(self.top_bar, text="Open", command=self.open_extract)
+        self.top_bar = ttk.Frame(self.preview_area)
+        self.open_btn = ttk.Button(self.top_bar, text="Open", command=self.open_extract)
         self.open_btn.pack(side="left", padx=0, pady=0)
-        self.next_btn = Button(self.top_bar, text="Next", state="disabled", command=self.next_page)
+        self.next_btn = ttk.Button(self.top_bar, text="Next", state="disabled", command=self.next_page)
         self.next_btn.pack(side="left", padx=0, pady=0)
-        self.prev_btn = Button(self.top_bar, text="Prev", state="disabled", command=self.prev_page)
+        self.prev_btn = ttk.Button(self.top_bar, text="Prev", state="disabled", command=self.prev_page)
         self.prev_btn.pack(side="left", padx=0, pady=0)
-        self.zoom_btn = Button(self.top_bar, text="Zoom", state="disabled", command=self.toggle_zoom)
+        self.zoom_btn = ttk.Button(self.top_bar, text="Zoom", state="disabled", command=self.toggle_zoom)
         self.zoom_btn.pack(side="left", padx=0, pady=0)
         self.top_bar.pack(side="top", fill="x")
         # Scrollable PDF preview area.
         self.pdf_preview = scroll_frame.ScrollFrame(self.preview_area)
-        self.pdf_page_img = Label(self.pdf_preview.view_port, text="Open a PDF to view or manually extract content.", image=None, pady=150)
+        self.pdf_page_img = ttk.Label(self.pdf_preview.view_port, text="Open a PDF to view or manually extract content.", image=None)
         self.pdf_page_img.pack(side="left", fill="both", expand=1)
         self.pdf_preview.pack(side="bottom", fill="both", expand=1)
         # Add the Extraction and Preview areas to the PanedWindow.
@@ -157,7 +161,7 @@ class ExtractPDF(Frame):
                 self.cur_page,
                 max_size=self.zoom_max_size
                 )
-        self.pdf_page_data = PhotoImage(data=self.data)
+        self.pdf_page_data = ttk.PhotoImage(data=self.data)
         self.pdf_page_img.configure(image=self.pdf_page_data, text=None)
         # Set button states to normal after file has been loaded.
         self.next_btn.configure(state="normal")
@@ -213,7 +217,7 @@ class ExtractPDF(Frame):
                 self.cur_page,
                 max_size=self.zoom_max_size
                 )
-        self.pdf_page_data = PhotoImage(data=self.data)
+        self.pdf_page_data = ttk.PhotoImage(data=self.data)
         self.pdf_page_img.configure(image=self.pdf_page_data, text=None)
 
     def prev_page(self):
@@ -235,7 +239,7 @@ class ExtractPDF(Frame):
                 self.cur_page,
                 max_size=self.zoom_max_size
                 )
-        self.pdf_page_data = PhotoImage(data=self.data)
+        self.pdf_page_data = ttk.PhotoImage(data=self.data)
         self.pdf_page_img.configure(image=self.pdf_page_data, text=None)
 
     def toggle_zoom(self):
@@ -256,7 +260,7 @@ class ExtractPDF(Frame):
                 self.cur_page,
                 max_size=self.max_size
                 )
-        self.pdf_page_data = PhotoImage(data=self.data)
+        self.pdf_page_data = ttk.PhotoImage(data=self.data)
         self.pdf_page_img.configure(image=self.pdf_page_data, text=None)
 
     def adobe_browse_folder(self):

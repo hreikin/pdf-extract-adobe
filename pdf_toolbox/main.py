@@ -2,10 +2,13 @@ from gui import extract_pdf, create_pdf
 from utils import constants
 
 from pathlib import Path
-from tkinter import *
+# from tkinter import *
+import tkinter as tk
 from tkinter import font, filedialog, simpledialog
 from tkinter import messagebox as mbox
-from tkinter.ttk import Notebook
+import ttkbootstrap as ttk
+from ttkbootstrap.constants import *
+# from ttkbootstrap import Notebook
 
 import logging
 
@@ -41,22 +44,22 @@ for item in constants.headings:
         new_headings.append(f"{item}[{i}]")
 constants.headings = new_headings
 
-class PDFToolbox(Frame):
+class PDFToolbox(ttk.Frame):
     def __init__(self, master=None):
         """Create a subclass of Frame for our window and then initialize and set 
         the variables."""
-        Frame.__init__(self, master)
+        ttk.Frame.__init__(self, master)
         self.master = master
         self.myfont = font.Font(family="Ubuntu", size=16)
         self.init_window()
 
     def init_window(self):
         """Construct the layout."""
-        self.tabs = Notebook(self.master)
+        self.tabs = ttk.Notebook(self.master)
 
         # Create two tabs and add them to the notebook.
-        self.extract_tab = Frame(self.tabs)
-        self.create_tab = Frame(self.tabs)
+        self.extract_tab = ttk.Frame(self.tabs)
+        self.create_tab = ttk.Frame(self.tabs)
         self.tabs.add(self.create_tab, text="Create")
         self.tabs.add(self.extract_tab, text="Extract")
         self.tabs.pack(fill="both", expand=1)
@@ -72,8 +75,8 @@ class PDFToolbox(Frame):
         self.extract_area = extract_pdf.ExtractPDF(self.extract_tab)
 
         # Create main menu layout.
-        self.main_menu = Menu(self)
-        self.file_menu = Menu(self.main_menu)
+        self.main_menu = ttk.Menu(self)
+        self.file_menu = ttk.Menu(self.main_menu)
         self.file_menu.add_command(label="Open Markdown File", command=self.open_md_file)
         self.file_menu.add_command(label="Save as", command=self.save_as_md_file)
         self.file_menu.add_command(label="Save", command=self.save_md_file)
@@ -82,7 +85,7 @@ class PDFToolbox(Frame):
         self.main_menu.add_cascade(label="File", menu=self.file_menu)
 
         # Create edit menu layout.
-        self.edit_menu = Menu(self.main_menu)
+        self.edit_menu = ttk.Menu(self.main_menu)
         self.edit_menu.add_command(label="Copy", command=lambda: self.focus_get().event_generate("<<Copy>>"), accelerator="Ctrl+C")
         self.edit_menu.add_command(label="Cut", command=lambda: self.focus_get().event_generate("<<Cut>>"), accelerator="Ctrl+X")
         self.edit_menu.add_command(label="Paste", command=lambda: self.focus_get().event_generate("<<Paste>>"), accelerator="Ctrl+V")
@@ -95,7 +98,7 @@ class PDFToolbox(Frame):
         self.main_menu.add_cascade(label="Edit", menu=self.edit_menu)
 
         # Create right click menu layout for the editor.
-        self.right_click = Menu(self.create_area.editor.text_area)
+        self.right_click = ttk.Menu(self.create_area.editor.text_area)
         self.right_click.add_command(label="Copy", command=lambda: self.focus_get().event_generate("<<Copy>>"), accelerator="Ctrl+C")
         self.right_click.add_command(label="Cut", command=lambda: self.focus_get().event_generate("<<Cut>>"), accelerator="Ctrl+X")
         self.right_click.add_command(label="Paste", command=lambda: self.focus_get().event_generate("<<Paste>>"), accelerator="Ctrl+V")
@@ -183,7 +186,10 @@ class PDFToolbox(Frame):
 # Instantiate the root window, set the screen size and instantiate the PDF 
 # Toolbox window before running the main loop.
 if __name__ == "__main__":
-    root = Tk()
+    # root = ttk.Tk()
+    # style = ttk.Style("darkly")
+    # root = ttk.Window()
+    root = ttk.Window(themename="darkly")
     root.title("PDF Toolbox")
     screen_height = root.winfo_screenheight()
     screen_width = root.winfo_screenwidth()

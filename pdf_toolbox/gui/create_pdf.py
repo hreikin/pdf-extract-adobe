@@ -3,8 +3,11 @@ from gui import editor
 
 from markdown import Markdown
 from pathlib import Path
-from tkinter import *
+# from tkinter import *
+import tkinter as tk
 from tkinter import font
+import ttkbootstrap as ttk
+from ttkbootstrap.constants import *
 from tkinterweb import HtmlFrame
 from pygments import lex
 from pygments.lexers.markup import MarkdownLexer
@@ -12,13 +15,13 @@ from pygments.token import Generic
 from pygments.lexer import bygroups
 from pygments.styles import get_style_by_name
 
-class CreatePDF(Frame):
+class CreatePDF(ttk.Frame):
     def __init__(self, master=None):
         """
         Create a subclass of Frame for our window element. Initialize and set 
         the variable defaults.
         """
-        Frame.__init__(self, master)
+        ttk.Frame.__init__(self, master)
         self.master = master
         self.myfont = font.Font(family="Ubuntu", size=14)
         self.init_window()
@@ -26,18 +29,18 @@ class CreatePDF(Frame):
     def init_window(self):
         """Construct the layout of the window element."""
         # Create PanedWindow for split layout.
-        self.main_pw = PanedWindow(self.master, sashrelief="raised", sashwidth=10, orient="vertical")
+        self.main_pw = ttk.Panedwindow(self.master, orient="vertical")
 
-        self.editor_pw = PanedWindow(self.main_pw, sashrelief="raised", sashwidth=10, orient="horizontal")
+        self.editor_pw = ttk.Panedwindow(self.main_pw, orient="horizontal")
         # Frame for editor and toolbar.
-        self.editor_frame = Frame(self.editor_pw, relief="groove", borderwidth=5)
+        self.editor_frame = ttk.Frame(self.editor_pw)
         # Toolbar.
-        self.top_bar = Frame(self.editor_frame, relief="groove", borderwidth=5)
-        self.open_btn = Button(self.top_bar, text="Open")
+        self.top_bar = ttk.Frame(self.editor_frame)
+        self.open_btn = ttk.Button(self.top_bar, text="Open")
         self.open_btn.pack(side="left", padx=0, pady=0)
-        self.save_as_btn = Button(self.top_bar, text="Save As")
+        self.save_as_btn = ttk.Button(self.top_bar, text="Save As")
         self.save_as_btn.pack(side="left", padx=0, pady=0)
-        self.save_btn = Button(self.top_bar, text="Save")
+        self.save_btn = ttk.Button(self.top_bar, text="Save")
         self.save_btn.pack(side="left", padx=0, pady=0)
         self.top_bar.pack(side="top", fill="x")
         # Editor with line numbers.
@@ -62,7 +65,7 @@ class CreatePDF(Frame):
         self.editor_frame.pack(fill="both", expand=1)
 
         # A tkinterweb HtmlFrame for the preview window.
-        self.preview_frame = HtmlFrame(self.editor_pw, relief="groove", borderwidth=5)
+        self.preview_frame = HtmlFrame(self.editor_pw)
 
         # Add the editor and preview frames to the paned window.
         self.editor_pw.add(self.editor_frame)
@@ -70,8 +73,8 @@ class CreatePDF(Frame):
         self.editor_pw.pack(fill="both", expand=1)
 
         # Options area for create/convert related functions.
-        self.create_options = Frame(self.main_pw, relief="groove", borderwidth=5)
-        self.some_other_text = Label(self.create_options, text="The create/convert options go here.")
+        self.create_options = ttk.Frame(self.main_pw)
+        self.some_other_text = ttk.Label(self.create_options, text="The create/convert options go here.")
         self.some_other_text.pack(fill="both", expand=1)
         self.create_options.pack(fill="both", expand=1)
 

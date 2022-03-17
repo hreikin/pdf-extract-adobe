@@ -1,16 +1,19 @@
-from tkinter import *
+# from tkinter import *
+import tkinter as tk
+import ttkbootstrap as ttk
+from ttkbootstrap.constants import *
 
-class Editor(Frame):
+class Editor(ttk.Frame):
     def __init__(self, master, **kwargs):
         """Two Text widgets and a Scrollbar in a Frame."""
-        Frame.__init__(self, master) # no need for super
+        ttk.Frame.__init__(self, master) # no need for super
 
         # Creating the widgets
-        self.text_area = Text(self, state="normal", wrap="none", pady=2, padx=3, undo=True, width=100, height=25)
+        self.text_area = ttk.Text(self, state="normal", wrap="none", pady=2, padx=3, undo=True, width=100, height=25)
         self.line_nums = LineNumbers(self, self.text_area, width=1)
         self.line_nums.pack(side="left", fill="y")
         self.text_area.pack(side="left", fill="both", expand=1)
-        self.scrollbar = Scrollbar(self.master)
+        self.scrollbar = ttk.Scrollbar(self.master)
         self.scrollbar.pack(side="right", fill="y")
 
 
@@ -31,7 +34,7 @@ class Editor(Frame):
         self.on_scrollbar('moveto', args[0])
 
 
-class LineNumbers(Text):
+class LineNumbers(ttk.Text):
     def __init__(self, master, text_widget, **kwargs):
         """A class to handle automatically updating the editors line numbers."""
         super().__init__(master, **kwargs)

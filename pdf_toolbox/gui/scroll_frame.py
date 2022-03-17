@@ -1,26 +1,29 @@
-from tkinter import *
+# from tkinter import *
+import tkinter as tk
+import ttkbootstrap as ttk
+from ttkbootstrap.constants import *
 import platform
 
 # ------------------------------------------------------------------------------
 # Scrollable Frame Class
 # ------------------------------------------------------------------------------
-class ScrollFrame(Frame):
+class ScrollFrame(ttk.Frame):
     # Create a frame (self)
     def __init__(self, parent, **kw):
         """Scrollable frame for an image, used to display the PDF files."""
         super().__init__(parent, **kw)
         # Place canvas on self
-        self.canvas = Canvas(self, borderwidth=0)
+        self.canvas = ttk.Canvas(self, borderwidth=0)
         # Place a frame on the canvas, this frame will hold the child widgets
-        self.view_port = Frame(self.canvas)
+        self.view_port = ttk.Frame(self.canvas)
         # Place a vertical scrollbar on self
-        self.vert_scrollbar = Scrollbar(self, orient="vertical", command=self.canvas.yview)
+        self.vert_scrollbar = ttk.Scrollbar(self, orient="vertical", command=self.canvas.yview)
         # Attach scrollbar action to scroll of canvas
         self.canvas.configure(yscrollcommand=self.vert_scrollbar.set)
         # Pack scrollbar to right of self
         self.vert_scrollbar.pack(side="right", fill="y")
         # Horizontal scrollbar, doesn't work as expected currently.
-        self.hori_scrollbar = Scrollbar(self, orient="horizontal", command=self.canvas.xview)
+        self.hori_scrollbar = ttk.Scrollbar(self, orient="horizontal", command=self.canvas.xview)
         self.canvas.configure(xscrollcommand=self.hori_scrollbar.set)
         self.hori_scrollbar.pack(side="bottom", fill="x")
         # Pack canvas to left of self and expand to fill.
